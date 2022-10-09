@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Autonomous(name="AutoPractice", group="Flaming Phoenix")
-
 public class AutoPractice extends LinearOpMode {
     DcMotor fl = null;
     DcMotor fr = null;
@@ -17,13 +16,21 @@ public class AutoPractice extends LinearOpMode {
     float PPR = 537.7f;
     float diameter = 4f;
 
+    ImageNavigation image;
+
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
         waitForStart();
-        Drive(20);
+
+        String signalLabel = image.ReadSignal();
+        telemetry.addData("Signal:", signalLabel);
+        telemetry.update();
+
+        this.sleep(30000);
+       /** Drive(20);
         this.sleep(1000);
-        Drive(10);
+        Drive(10);*/
     }
     public void Drive(float distance){
         double encoderCount = (distance/(diameter*Math.PI))*PPR;
@@ -59,6 +66,6 @@ public class AutoPractice extends LinearOpMode {
 
         br = hardwareMap.dcMotor.get("br");
 
-
+        image = new ImageNavigation(this);
     }
 }
