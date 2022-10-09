@@ -4,4 +4,6 @@ public class WallImageData {
      public String ImageName;
      public float distance;
      public float bearing;
+     //test push
+
 }
