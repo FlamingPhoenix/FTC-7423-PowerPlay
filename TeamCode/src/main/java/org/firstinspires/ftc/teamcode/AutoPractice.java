@@ -43,6 +43,9 @@ public class AutoPractice extends LinearOpMode {
             fr.setPower(0.5);
             bl.setPower(0.5);
             br.setPower(0.5);
+            fl.setPower(0);
+            fr.setPower(0);
+            bl.setPower(0);
             telemetry.addData("Current Pos %d", fl.getCurrentPosition());
             telemetry.update();
         }
@@ -50,9 +53,6 @@ public class AutoPractice extends LinearOpMode {
 
     }
     public void StopAllWheels(){
-        fl.setPower(0);
-        fr.setPower(0);
-        bl.setPower(0);
         br.setPower(0);
 
     }
@@ -67,5 +67,8 @@ public class AutoPractice extends LinearOpMode {
         br = hardwareMap.dcMotor.get("br");
 
         image = new ImageNavigation(this);
+        String signalLabelName = image.ReadSignal();
+        telemetry.addData("image label", signalLabelName);
+        telemetry.update();
     }
 }
