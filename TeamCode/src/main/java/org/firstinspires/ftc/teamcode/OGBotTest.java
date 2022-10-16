@@ -22,12 +22,10 @@ import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCapt
 @TeleOp(name="servotele", group="none")
 
 public class OGBotTest extends OpMode {
-    Servo arm = null;
     DcMotor pulley = null;
     @Override
     public void init() {
         pulley = hardwareMap.dcMotor.get("pulley");
-         arm = hardwareMap.servo.get("servo");
     }
 
     @Override
@@ -36,17 +34,10 @@ public class OGBotTest extends OpMode {
             pulley.setPower(gamepad1.left_stick_y);
         }
         else if (gamepad1.left_stick_y > 0) {
-            pulley.setPower(0);
+            pulley.setPower(0.25*gamepad1.left_stick_y);
         }
         else {
-            pulley.setPower(-0.15);
-        }
-
-        if (gamepad1.b){
-            arm.setPosition(0);
-        }
-        if (gamepad1.a){
-            arm.setPosition(0.67);
+            pulley.setPower(-0.12);
         }
     }
 }
