@@ -12,7 +12,7 @@ public class AutoPractice extends LinearOpMode {
     DcMotor fr = null;
     DcMotor bl = null;
     DcMotor br = null;
-
+    DcMotor pulley = null;
     float PPR = 537.7f;
     float diameter = 4f;
 
@@ -65,7 +65,10 @@ public class AutoPractice extends LinearOpMode {
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
 
         br = hardwareMap.dcMotor.get("br");
+        pulley = hardwareMap.dcMotor.get("pulley");
 
         image = new ImageNavigation(this);
     }
+
+
 }
