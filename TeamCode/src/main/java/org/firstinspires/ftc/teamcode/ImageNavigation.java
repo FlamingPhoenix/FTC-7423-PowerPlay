@@ -14,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.SwitchableCamera;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
@@ -158,23 +159,42 @@ public class ImageNavigation {
         return "";
     }
 
+    public void switchOnVuforia() {
+        tfod.deactivate();
+        targets.activate();
+    }
+
     public WallImageData ReadWallImage() {
         targets.activate();
         targetVisible = false;
+        OpenGLMatrix lastLocation = null;
+
+        WallImageData imageData = new WallImageData();
+
         for (VuforiaTrackable trackable : allTrackables) {
             if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-                opMode.telemetry.addData("Visible Target", trackable.getName());
                 targetVisible = true;
 
                 // getUpdatedRobotLocation() will return null if no new information is available since
                 // the last time that call was made, or if the trackable is not currently visible.
                 OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
                 if (robotLocationTransform != null) {
-                    //???
+                    lastLocation = robotLocationTransform;
+                    imageData.ImageName = trackable.getName();
                 }
                 break;
             }
         }
+        if (targetVisible) {
+            // express position (translation) of robot in inches.
+            VectorF translation = lastLocation.getTranslation();
+            imageData.x = translation.get(0);
+            imageData.y = translation.get(1);
+            imageData.z = translation.get(2);
+
+            return imageData;
+        }
+
         return null;
     }
 
@@ -266,10 +286,11 @@ public class ImageNavigation {
         }
     }
 
-    void    identifyTarget(int targetIndex, String targetName, float dx, float dy, float dz, float rx, float ry, float rz) {
+    public void    identifyTarget(int targetIndex, String targetName, float dx, float dy, float dz, float rx, float ry, float rz) {
         VuforiaTrackable aTarget = targets.get(targetIndex);
         aTarget.setName(targetName);
         aTarget.setLocation(OpenGLMatrix.translation(dx, dy, dz)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, rx, ry, rz)));
+
     }
 }

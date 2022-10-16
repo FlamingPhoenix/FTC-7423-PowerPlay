@@ -23,11 +23,25 @@ public class AutoPractice extends LinearOpMode {
         initialize();
         waitForStart();
 
-        String signalLabel = image.ReadSignal();
-        telemetry.addData("Signal:", signalLabel);
-        telemetry.update();
+        //String signalLabel = image.ReadSignal();
+        //telemetry.addData("Signal:", signalLabel);
+        //telemetry.update();
 
-        this.sleep(30000);
+        //this.sleep(5000);
+
+        image.switchOnVuforia();
+
+        while(this.opModeIsActive()) {
+            WallImageData imageData = image.ReadWallImage();
+            if (imageData != null)
+                telemetry.addData("ImageData:", String.format("x: %10.2f", imageData.x));
+            else
+                telemetry.addData("ImageData:", "can't see image");
+
+            telemetry.update();
+            this.sleep(1000);
+        }
+
        /** Drive(20);
         this.sleep(1000);
         Drive(10);*/
@@ -65,7 +79,7 @@ public class AutoPractice extends LinearOpMode {
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
 
         br = hardwareMap.dcMotor.get("br");
-        pulley = hardwareMap.dcMotor.get("pulley");
+        //pulley = hardwareMap.dcMotor.get("pulley");
 
         image = new ImageNavigation(this);
         String signalLabelName = image.ReadSignal();
