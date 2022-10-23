@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImageNavigation {
-
     /* constructor */
     public ImageNavigation(LinearOpMode opMode) {
         this.opMode = opMode;

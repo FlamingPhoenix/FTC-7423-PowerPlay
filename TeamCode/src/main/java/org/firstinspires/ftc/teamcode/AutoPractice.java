@@ -23,6 +23,7 @@ public class AutoPractice extends LinearOpMode {
         initialize();
         waitForStart();
 
+
         //String signalLabel = image.ReadSignal();
         //telemetry.addData("Signal:", signalLabel);
         //telemetry.update();
@@ -82,8 +83,8 @@ public class AutoPractice extends LinearOpMode {
         //pulley = hardwareMap.dcMotor.get("pulley");
 
         image = new ImageNavigation(this);
-        String signalLabelName = image.ReadSignal();
-        telemetry.addData("image label", signalLabelName);
+        //String signalLabelName = image.ReadSignal();
+        //telemetry.addData("image label", signalLabelName);
         telemetry.update();
     }
 
