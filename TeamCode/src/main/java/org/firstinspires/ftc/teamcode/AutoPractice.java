@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
@@ -23,13 +22,14 @@ public class AutoPractice extends LinearOpMode {
         initialize();
         waitForStart();
 
-
+        MoveAround(new Coordinate(0,0), new Coordinate(5, 10));
         //String signalLabel = image.ReadSignal();
         //telemetry.addData("Signal:", signalLabel);
         //telemetry.update();
 
         //this.sleep(5000);
 
+        /*
         image.switchOnVuforia();
 
         while(this.opModeIsActive()) {
@@ -42,8 +42,8 @@ public class AutoPractice extends LinearOpMode {
             telemetry.update();
             this.sleep(1000);
         }
-
-       /** Drive(20);
+*/
+       /*Drive(20);
         this.sleep(1000);
         Drive(10);*/
     }
@@ -82,11 +82,52 @@ public class AutoPractice extends LinearOpMode {
         br = hardwareMap.dcMotor.get("br");
         //pulley = hardwareMap.dcMotor.get("pulley");
 
-        image = new ImageNavigation(this);
+        //image = new ImageNavigation(this);
         //String signalLabelName = image.ReadSignal();
         //telemetry.addData("image label", signalLabelName);
         telemetry.update();
     }
 
+    public void MoveAround(Coordinate startPosition, Coordinate targetPosition) {
+        double xDistance = (targetPosition.x-startPosition.x);
+        double yDistance = (targetPosition.y - startPosition.y);
+        double directionalAngle = Math.toDegrees(Math.atan2(xDistance, yDistance));
+
+        double power = 1.0;
+        double flp = power, frp = power, brp = power, blp = power;
+
+
+        if (directionalAngle <= 30) {
+            flp = power * (45 - directionalAngle) / 45;
+            brp = power * (45 - directionalAngle) / 45;
+        }
+        else if (directionalAngle <= 45) {
+            flp = power;
+            brp = power;
+        }
+        else if (directionalAngle <= 60) {
+            flp = power * (90 - directionalAngle) / 45;
+            brp = power * (90 - directionalAngle) / 45;
+        }
+        else if (directionalAngle <= 90) {
+            flp = power;
+            brp = power;
+        }
+
+        frp = power*(45-directionalAngle)/45.0;
+        blp = power*(45-directionalAngle)/45.0;
+
+        telemetry.addData("anggle", String.format("angle=%5.2f", directionalAngle));
+        telemetry.addData("data", String.format("flp=%5.2f, brp=%5.2f, frp=%5.2f, blp=%5.2f", flp, brp, frp, blp));
+        telemetry.update();
+
+        fl.setPower(flp);
+        bl.setPower(blp);
+        fr.setPower(frp);
+        br.setPower(brp);
+
+        this.sleep(2000);
+
+    }
 
 }
