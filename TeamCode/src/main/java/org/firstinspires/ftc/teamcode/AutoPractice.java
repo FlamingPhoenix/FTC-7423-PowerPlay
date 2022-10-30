@@ -87,7 +87,21 @@ public class AutoPractice extends LinearOpMode {
         //telemetry.addData("image label", signalLabelName);
         telemetry.update();
     }
+    public double Max(double f1, double f2, double f3, double f4) {
+        f1 = Math.abs(f1);
+        f2 = Math.abs(f2);
+        f3 = Math.abs(f3);
+        f4 = Math.abs(f4);
 
+
+        if(f1>=f2 && f1>=f3 && f1>=f4) return f1;
+        if(f2>=f1 && f2>=f3 && f2>=f4) return f2;
+        if(f3>=f1 && f1>=f2 && f1>=f4) return f3;
+        return f4;
+
+
+
+    }
     public void MoveAround(Coordinate startPosition, Coordinate targetPosition) {
         double xDistance = (targetPosition.x-startPosition.x);
         double yDistance = (targetPosition.y - startPosition.y);
@@ -96,37 +110,22 @@ public class AutoPractice extends LinearOpMode {
         double power = 1.0;
         double flp = power, frp = power, brp = power, blp = power;
 
+        flp = yDistance + xDistance;
+        frp = yDistance - xDistance;
+        blp = yDistance - xDistance;
+        brp = yDistance + xDistance;
 
-        if (directionalAngle <= 30) {
-            flp = power * (45 - directionalAngle) / 45;
-            brp = power * (45 - directionalAngle) / 45;
-        }
-        else if (directionalAngle <= 45) {
-            flp = power;
-            brp = power;
-        }
-        else if (directionalAngle <= 60) {
-            flp = power * (90 - directionalAngle) / 45;
-            brp = power * (90 - directionalAngle) / 45;
-        }
-        else if (directionalAngle <= 90) {
-            flp = power;
-            brp = power;
-        }
 
-        frp = power*(45-directionalAngle)/45.0;
-        blp = power*(45-directionalAngle)/45.0;
+        double max = Max(flp, frp, blp, brp);
 
-        telemetry.addData("anggle", String.format("angle=%5.2f", directionalAngle));
-        telemetry.addData("data", String.format("flp=%5.2f, brp=%5.2f, frp=%5.2f, blp=%5.2f", flp, brp, frp, blp));
-        telemetry.update();
-
-        fl.setPower(flp);
-        bl.setPower(blp);
-        fr.setPower(frp);
-        br.setPower(brp);
+        fl.setPower(flp/max * power);
+        fr.setPower(frp/max * power);
+        bl.setPower(blp/max * power);
+        br.setPower(brp/max * power);
 
         this.sleep(2000);
+
+
 
     }
 

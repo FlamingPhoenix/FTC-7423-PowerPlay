@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -12,7 +13,8 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
 
 import java.util.ArrayList;
 
-@TeleOp
+@TeleOp(name="April", group="none")
+
 public class AprilTagAutonomousInitDetection extends LinearOpMode
 {
     OpenCvCamera camera;
@@ -31,11 +33,9 @@ public class AprilTagAutonomousInitDetection extends LinearOpMode
 
     // UNITS ARE METERS
     double tagsize = 0.166;
-
-    int ID_TAG_OF_INTEREST = 18; // Tag ID 18 from the 36h11 family
-    int LEFT = 1;
-    int CENTER = 2;
-    int RIGHT = 3;
+    int LEFT = 0;
+    int CENTER = 1;
+    int RIGHT = 2;
     AprilTagDetection tagOfInterest = null;
 
     @Override
@@ -63,10 +63,6 @@ public class AprilTagAutonomousInitDetection extends LinearOpMode
 
         telemetry.setMsTransmissionInterval(50);
 
-        /*
-         * The INIT-loop:
-         * This REPLACES waitForStart!
-         */
         while (!isStarted() && !isStopRequested())
         {
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
@@ -143,34 +139,15 @@ public class AprilTagAutonomousInitDetection extends LinearOpMode
             telemetry.addLine("No tag snapshot available, it was never sighted during the init loop :(");
             telemetry.update();
         }
-
-        /* Actually do something useful */
-        if(tagOfInterest == null)
-        {
-            /*
-             * Insert your autonomous code here, presumably running some default configuration
-             * since the tag was never sighted during INIT
-             */
-        }
-        else
-        {
-            /*
-             * Insert your autonomous code here, probably using the tag pose to decide your configuration.
-             */
-
-            // e.g.
-            if(tagOfInterest.pose.x <= 20)
-            {
-                // do something
-            }
-            else if(tagOfInterest.pose.x >= 20 && tagOfInterest.pose.x <= 50)
-            {
-                // do something else
-            }
-            else if(tagOfInterest.pose.x >= 50)
-            {
-                // do something else
-            }
+        if(tagOfInterest == null || tagOfInterest.id == LEFT){
+            telemetry.addLine("LEFT");
+            telemetry.update();
+        }else if (tagOfInterest.id == CENTER){
+            telemetry.addLine("CENTER");
+            telemetry.update();
+        }else{
+            telemetry.addLine("RIGHT");
+            telemetry.update();
         }
 
 
