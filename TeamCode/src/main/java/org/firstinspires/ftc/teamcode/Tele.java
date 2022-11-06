@@ -18,8 +18,6 @@ public class Tele extends OpMode{
     DcMotor fl;
     DcMotor br;
     DcMotor bl;
-    DcMotor pulley;
-
 
     float x1, x2, y1, y2, tr, tl, tr2;
     float maxPower = 0.8f;
@@ -37,16 +35,15 @@ public class Tele extends OpMode{
 
     public void Drive(float x1, float y1, float x2) {
 
-        float frontLeft = y1 + x1 + x2; //new wheel orientation
-        float frontRight = y1 - x1 - x2;
-        float backLeft = y1 - x1 + x2;
+        float frontLeft = (y1 + x1 + x2);
+        float frontRight = -y1 - x1 - x2;
+        float backLeft = -(y1 - x1 + x2);
         float backRight = y1 + x1 - x2;
 
         frontLeft = Range.clip(frontLeft, -1, 1);
         frontRight = Range.clip(frontRight, -1, 1);
         backLeft = Range.clip(backLeft, -1, 1);
         backRight = Range.clip(backRight, -1, 1);
-
         fl.setPower(frontLeft * maxPower);
         fr.setPower(frontRight * maxPower);
         bl.setPower(backLeft * maxPower);
@@ -62,10 +59,6 @@ public class Tele extends OpMode{
         fl = hardwareMap.dcMotor.get("fl");
         br = hardwareMap.dcMotor.get("br");
         bl = hardwareMap.dcMotor.get("bl");
-        pulley = hardwareMap.dcMotor.get("pulley");
-
-        pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        pulley.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         telemetry.addData("Ready for start %f", 0);
         telemetry.update();
@@ -84,7 +77,6 @@ public class Tele extends OpMode{
         x2 = gamepad1.right_stick_x;
         y2 = gamepad1.right_stick_y;
 
-        Log.i("[phoenix:pulleyPos]", String.format("power = %f", pulley.getPower()));
 
         double joystickLeftDistance = Math.pow(x1, 2) + Math.pow(y1, 2);
         if (joystickLeftDistance < 0.9) {

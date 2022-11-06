@@ -22,30 +22,28 @@ public class AutoPractice extends LinearOpMode {
         initialize();
         waitForStart();
 
-        MoveAround(new Coordinate(0,0), new Coordinate(5, 10));
         //String signalLabel = image.ReadSignal();
         //telemetry.addData("Signal:", signalLabel);
         //telemetry.update();
 
         //this.sleep(5000);
 
-        /*
+
         image.switchOnVuforia();
 
         while(this.opModeIsActive()) {
             WallImageData imageData = image.ReadWallImage();
-            if (imageData != null)
-                telemetry.addData("ImageData:", String.format("x: %10.2f", imageData.x));
-            else
+            if (imageData != null) {
+                telemetry.addData("ImageData:", String.format("x: %10.2f; y: %10.2f", imageData.x, imageData.y));
+                MoveAround(new Coordinate(imageData.x/2.54f,imageData.y/2.54f), new Coordinate(0, 0));
+            }else
                 telemetry.addData("ImageData:", "can't see image");
 
             telemetry.update();
             this.sleep(1000);
+
+
         }
-*/
-       /*Drive(20);
-        this.sleep(1000);
-        Drive(10);*/
     }
     public void Drive(float distance){
         double encoderCount = (distance/(diameter*Math.PI))*PPR;
@@ -82,7 +80,7 @@ public class AutoPractice extends LinearOpMode {
         br = hardwareMap.dcMotor.get("br");
         //pulley = hardwareMap.dcMotor.get("pulley");
 
-        //image = new ImageNavigation(this);
+        image = new ImageNavigation(this);
         //String signalLabelName = image.ReadSignal();
         //telemetry.addData("image label", signalLabelName);
         telemetry.update();

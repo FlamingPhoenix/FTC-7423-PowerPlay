@@ -30,6 +30,7 @@ public abstract class AutoBase extends LinearOpMode {
     Servo intakeLeft, intakeRight; //intakeLeft is not used because one servo is enough
     Servo vbarLeft, vbarRight;
     Servo finger;
+    AprilTagAutonomousInitDetection apriltag;
 
     float pos = 0.5f;
     float vposR = 0.69f;
@@ -56,62 +57,10 @@ public abstract class AutoBase extends LinearOpMode {
     DcMotor[] driveMotors = {fr, fl, br, bl};
 
     public void initialize (){
-        fr = hardwareMap.dcMotor.get("frontright");
-        fl = hardwareMap.dcMotor.get("frontleft");
-        br = hardwareMap.dcMotor.get("backright");
-        bl = hardwareMap.dcMotor.get("backleft");
-        pulley = hardwareMap.dcMotor.get("pulley");
-        pulley2 = hardwareMap.dcMotor.get("pulley2");
-
-        intakeRight = hardwareMap.servo.get("intakeright");
-        ServoControllerEx intakeRightController = (ServoControllerEx) intakeRight.getController();
-        int intakeRightServoPort = intakeRight.getPortNumber();
-        PwmControl.PwmRange intakeRightPwmRange = new PwmControl.PwmRange(600, 2400);
-        intakeRightController.setServoPwmRange(intakeRightServoPort, intakeRightPwmRange);
-        intakeRight.setPosition(0); //starting position
-
-        vbarLeft = hardwareMap.servo.get("vbarleft");
-        ServoControllerEx vbarLeftController = (ServoControllerEx) vbarLeft.getController();
-        int vbarLeftServoPort = vbarLeft.getPortNumber();
-        PwmControl.PwmRange vbarLeftPwmRange = new PwmControl.PwmRange(600, 2400);
-        vbarLeftController.setServoPwmRange(vbarLeftServoPort, vbarLeftPwmRange);
-
-        vbarRight = hardwareMap.servo.get("vbarright");
-        ServoControllerEx vbarRightController = (ServoControllerEx) vbarRight.getController();
-        int vbarRightServoPort = vbarRight.getPortNumber();
-        PwmControl.PwmRange vbarRightPwmRange = new PwmControl.PwmRange(600, 2400);
-        vbarRightController.setServoPwmRange(vbarRightServoPort, vbarRightPwmRange);
-        vbarRight.setPosition(vposR);
-
-        finger = hardwareMap.servo.get("finger");
-        ServoControllerEx fingerController = (ServoControllerEx) finger.getController();
-        int fingerServoPort = finger.getPortNumber();
-        PwmControl.PwmRange fingerPwmRange = new PwmControl.PwmRange(600, 2400);
-        fingerController.setServoPwmRange(fingerServoPort, fingerPwmRange);
-        finger.setPosition(fpos);
-
-        bl.setDirection(DcMotorSimple.Direction.REVERSE);
-        fl.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        pulley2.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        pulley2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        pulley.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        pulley2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        MyIMU imu = new MyIMU(hardwareMap);
-        BNO055IMU.Parameters p = new BNO055IMU.Parameters();
-        imu.initialize(p);
-
-        //imageNavigation = new ImageNavigation(hardwareMap, this);
-        //imageNavigation.init();
-
-        startHeading = imu.getAdjustedAngle();
-        distanceSensor = hardwareMap.get(DistanceSensor.class, "distance");
-
-        telemetry.addData("Ready for start %f", 0);
-        telemetry.update();
+        fr = hardwareMap.dcMotor.get("fr");
+        fl = hardwareMap.dcMotor.get("fl");
+        br = hardwareMap.dcMotor.get("br");
+        bl = hardwareMap.dcMotor.get("bl");
     }
 
     public void StopAll() {
@@ -870,53 +819,4 @@ public abstract class AutoBase extends LinearOpMode {
         StopAll();
 
     }
-
-    /*public int useCamera () {
-        int duckPosition = 2;
-        OpenCvWebcam webcam;
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "specialCamera"), cameraMonitorViewId);
-
-        MainPipeline myPipeline = new MainPipeline();
-        webcam.setPipeline(myPipeline);
-
-        OpenCvWebcam finalWebcam = webcam;
-        finalWebcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-            @Override
-            public void onOpened() {
-                finalWebcam.startStreaming(1920 ,1080, OpenCvCameraRotation.UPRIGHT);
-                telemetry.addData("Initialization passed ", 1);
-                telemetry.update();
-            }
-            @Override
-            public void onError(int errorCode) {
-                telemetry.addData("Init Failed ", errorCode);
-                telemetry.update();
-            }
-        });
-
-        //replaces init-loop
-
-        while (!isStarted() && !isStopRequested())
-        {
-            if (myPipeline.position == MainPipeline.ShippingElementPosition.LEFT) {
-                telemetry.addData("Realtime analysis: Left ", duckPosition);
-            }
-            if (myPipeline.position == MainPipeline.ShippingElementPosition.CENTER) {
-                duckPosition = 1;
-                telemetry.addData("Realtime analysis: Center ", duckPosition);
-            }
-            if (myPipeline.position == MainPipeline.ShippingElementPosition.RIGHT) {
-                duckPosition = 0;
-                telemetry.addData("Realtime analysis: Right ", duckPosition);
-            }
-            telemetry.update();
-            sleep(50);
-        }
-
-        return duckPosition;
-
-    }*/
-
-
 }

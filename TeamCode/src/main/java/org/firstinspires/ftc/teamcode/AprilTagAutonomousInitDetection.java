@@ -13,9 +13,9 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
 
 import java.util.ArrayList;
 
-@TeleOp(name="April", group="none")
+@Autonomous(name="April", group="none")
 
-public class AprilTagAutonomousInitDetection extends LinearOpMode
+public class AprilTagAutonomousInitDetection extends AutoBase
 {
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -31,6 +31,7 @@ public class AprilTagAutonomousInitDetection extends LinearOpMode
     double cx = 402.145;
     double cy = 221.506;
 
+
     // UNITS ARE METERS
     double tagsize = 0.166;
     int LEFT = 0;
@@ -39,8 +40,8 @@ public class AprilTagAutonomousInitDetection extends LinearOpMode
     AprilTagDetection tagOfInterest = null;
 
     @Override
-    public void runOpMode()
-    {
+    public void runOpMode(){
+        initialize();
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
@@ -141,13 +142,21 @@ public class AprilTagAutonomousInitDetection extends LinearOpMode
         }
         if(tagOfInterest == null || tagOfInterest.id == LEFT){
             telemetry.addLine("LEFT");
+
             telemetry.update();
+            Drive(1,24, Direction.FORWARD);
+            Strafe(1,24, Direction.LEFT);
+
+
         }else if (tagOfInterest.id == CENTER){
             telemetry.addLine("CENTER");
             telemetry.update();
+            Drive(1,24, Direction.FORWARD);
         }else{
             telemetry.addLine("RIGHT");
             telemetry.update();
+            Drive(1, 24, Direction.FORWARD);
+            Strafe(1,24, Direction.RIGHT);
         }
 
 
