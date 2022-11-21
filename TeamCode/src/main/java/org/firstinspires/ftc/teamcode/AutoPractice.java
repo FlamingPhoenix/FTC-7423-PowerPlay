@@ -29,8 +29,9 @@ public class AutoPractice extends LinearOpMode {
         //this.sleep(5000);
 
 
-        image.switchOnVuforia();
-
+        //image.switchOnVuforia();
+        Drive(24f);
+        /*
         while(this.opModeIsActive()) {
             WallImageData imageData = image.ReadWallImage();
             if (imageData != null) {
@@ -43,7 +44,7 @@ public class AutoPractice extends LinearOpMode {
             this.sleep(1000);
 
 
-        }
+        }*/
     }
     public void Drive(float distance){
         double encoderCount = (distance/(diameter*Math.PI))*PPR;

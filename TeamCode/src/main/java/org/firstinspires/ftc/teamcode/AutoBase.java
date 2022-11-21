@@ -25,11 +25,11 @@ public abstract class AutoBase extends LinearOpMode {
     DcMotor fl;
     DcMotor br;
     DcMotor bl;
-    DcMotor pulley, pulley2;
+    DcMotor turret;
     DistanceSensor distanceSensor;
     Servo intakeLeft, intakeRight; //intakeLeft is not used because one servo is enough
     Servo vbarLeft, vbarRight;
-    Servo finger;
+    Servo grabber;
     AprilTagAutonomousInitDetection apriltag;
 
     float pos = 0.5f;
@@ -54,19 +54,24 @@ public abstract class AutoBase extends LinearOpMode {
 
     public int currentStage, currentPosition;
 
-    DcMotor[] driveMotors = {fr, fl, br, bl};
 
     public void initialize (){
         fr = hardwareMap.dcMotor.get("fr");
         fl = hardwareMap.dcMotor.get("fl");
         br = hardwareMap.dcMotor.get("br");
         bl = hardwareMap.dcMotor.get("bl");
+        turret = hardwareMap.dcMotor.get("turret");
+        Servo grabber = hardwareMap.servo.get("grabber");
+
     }
 
     public void StopAll() {
-        for (DcMotor motor : driveMotors) {
-            motor.setPower(0);
-        }
+        fl.setPower(0);
+        fr.setPower(0);
+        bl.setPower(0);
+        br.setPower(0);
+
+
     }
 
     public void Drive (float power, float distance, Direction d) {
@@ -81,22 +86,53 @@ public abstract class AutoBase extends LinearOpMode {
         while (currentPosition < targetEncoderValue && opModeIsActive()) {
             currentPosition = Math.abs(bl.getCurrentPosition());
             if (d == Direction.FORWARD) {
-                for (DcMotor motor : driveMotors) {
-                    motor.setPower(power);
-                }
+                fl.setPower(-power);
+                fr.setPower(power);
+                bl.setPower(-power);
+                br.setPower(power);
+
+
+                //for (DcMotor motor : driveMotors) {
+                  //  motor.setPower(power);
+
+
             }
             if (d == Direction.BACKWARD) {
-                for (DcMotor motor : driveMotors) {
-                    motor.setPower(-power);
-                }
+                fl.setPower(power);
+                fr.setPower(-power);
+                bl.setPower(power);
+                br.setPower(-power);
+
             }
         }
 
         StopAll();
 
     }
+    public void Drive(float distance, float power){
+        double encoderCount = Math.round((distance/(diameter*(float)Math.PI))*PPR);
 
+        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        float currentPosition = 0;
+        while (currentPosition<encoderCount && opModeIsActive()){
+            currentPosition = fr.getCurrentPosition();
+            fl.setPower(-power);
+            fr.setPower(power);
+            bl.setPower(-power);
+            br.setPower(power);
+            telemetry.addData("Current Pos %d", fl.getCurrentPosition());
+            telemetry.update();
+        }
+        StopAllWheels();
 
+    }
+    public void StopAllWheels(){
+        fr.setPower(0);
+        fl.setPower(0);
+        br.setPower(0);
+        bl.setPower(0);
+    }
 
 
 
@@ -158,24 +194,24 @@ public abstract class AutoBase extends LinearOpMode {
 
         int targetEncoderValue = Math.round(x);
 
-        bl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         int currentPosition = 0;
 
         if (d == Direction.LEFT) {
             while (currentPosition < targetEncoderValue && opModeIsActive()) {
-                currentPosition = Math.abs(bl.getCurrentPosition());
-                fl.setPower(-power);
+                currentPosition = Math.abs(fr.getCurrentPosition());
+                fl.setPower(power);
                 fr.setPower(power);
-                bl.setPower(power);
+                bl.setPower(-power);
                 br.setPower(-power);
             }
         } else {
             while (currentPosition < targetEncoderValue && opModeIsActive()) {
-                currentPosition = Math.abs(bl.getCurrentPosition());
-                fl.setPower(power);
+                currentPosition = Math.abs(fr.getCurrentPosition());
+                fl.setPower(-power);
                 fr.setPower(-power);
-                bl.setPower(-power);
+                bl.setPower(power);
                 br.setPower(power);
             }
         }
@@ -329,6 +365,9 @@ public abstract class AutoBase extends LinearOpMode {
             bl.setPower(blp);
             br.setPower(brp);
         }
+    }
+    public void moveTurret(float amount){
+
     }
 
 

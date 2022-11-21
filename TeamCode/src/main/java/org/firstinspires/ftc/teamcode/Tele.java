@@ -19,6 +19,10 @@ public class Tele extends OpMode{
     DcMotor br;
     DcMotor bl;
 
+    DcMotor turret;
+    DcMotor lift;
+
+    Servo grabber;
     float x1, x2, y1, y2, tr, tl, tr2;
     float maxPower = 0.8f;
 
@@ -59,7 +63,19 @@ public class Tele extends OpMode{
         fl = hardwareMap.dcMotor.get("fl");
         br = hardwareMap.dcMotor.get("br");
         bl = hardwareMap.dcMotor.get("bl");
+        turret = hardwareMap.dcMotor.get("turret");
+        lift = hardwareMap.dcMotor.get("lift");
+        grabber = hardwareMap.servo.get("grabber");
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+
+        // Reverse the right side motors
+        // Reverse left motors if you are using NeveRests
+        fr.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection(DcMotorSimple.Direction.REVERSE);
         telemetry.addData("Ready for start %f", 0);
         telemetry.update();
 
@@ -72,12 +88,43 @@ public class Tele extends OpMode{
 
     @Override
     public void loop() {
+
         x1 = gamepad1.left_stick_x;
         y1 = gamepad1.left_stick_y;
         x2 = gamepad1.right_stick_x;
         y2 = gamepad1.right_stick_y;
+        lift.setPower(-0.25f);
+        if (gamepad2.dpad_left)
+            grabber.setPosition(0.3);
+        if (gamepad2.a)
+            lift.setPower(-1f);
+        if (gamepad2.x)
+            grabber.setPosition(0.5);
+        if (gamepad2.dpad_right)
+            grabber.setPosition(0.6);
+        if(gamepad2.right_stick_y<0)
+            lift.setPower(gamepad2.right_stick_y);
+        else if(gamepad2.right_stick_y>0)
+            lift.setPower(gamepad2.right_stick_y*0.33);
 
+        telemetry.addData("lift pos:", lift.getCurrentPosition());
 
+        int turretPosition = turret.getCurrentPosition();
+        telemetry.addData("turret pos:", String.format(" %d, x:%10.3f", turretPosition, gamepad2.left_stick_x));
+
+        /*if(gamepad2.left_stick_x > 0.1 || gamepad2.left_stick_x < -0.10){
+            if (gamepad2.left_stick_x < -0.1 && turretPosition >= -203) {
+                turret.setPower(-0.35);
+            }
+            else if (gamepad2.left_stick_x >  0.1 && turretPosition <= 0)
+                turret.setPower(0.35);
+            else
+                turret.setPower(0);
+        }
+        else{
+            turret.setPower(0);
+        }
+        */
         double joystickLeftDistance = Math.pow(x1, 2) + Math.pow(y1, 2);
         if (joystickLeftDistance < 0.9) {
             x1 = x1 / 2;

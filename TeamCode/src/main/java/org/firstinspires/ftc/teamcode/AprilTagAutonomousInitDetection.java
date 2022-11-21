@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.apriltag.AprilTagDetection;
@@ -41,11 +42,13 @@ public class AprilTagAutonomousInitDetection extends AutoBase
 
     @Override
     public void runOpMode(){
-        initialize();
+        initialize(); //set up motors
+
+
+        //set up camera and April Tag math
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
-
         camera.setPipeline(aprilTagDetectionPipeline);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
@@ -63,15 +66,14 @@ public class AprilTagAutonomousInitDetection extends AutoBase
         });
 
         telemetry.setMsTransmissionInterval(50);
-
+        //initialization phase until start pressed
         while (!isStarted() && !isStopRequested())
         {
+            //reading signal and finding parking location, also repeated image processing
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
-
             if(currentDetections.size() != 0)
             {
                 boolean tagFound = false;
-
                 for(AprilTagDetection tag : currentDetections)
                 {
                     if(tag.id == LEFT || tag.id == CENTER || tag.id == RIGHT)
@@ -81,7 +83,6 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                         break;
                     }
                 }
-
                 if(tagFound)
                 {
                     telemetry.addLine("Tag of interest is in sight!\n\nLocation data:");
@@ -90,7 +91,6 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                 else
                 {
                     telemetry.addLine("Don't see tag of interest :(");
-
                     if(tagOfInterest == null)
                     {
                         telemetry.addLine("(The tag has never been seen)");
@@ -101,12 +101,10 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                         tagToTelemetry(tagOfInterest);
                     }
                 }
-
             }
             else
             {
                 telemetry.addLine("Don't see tag of interest :(");
-
                 if(tagOfInterest == null)
                 {
                     telemetry.addLine("(The tag has never been seen)");
@@ -116,7 +114,6 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
                     tagToTelemetry(tagOfInterest);
                 }
-
             }
 
             telemetry.update();
@@ -140,28 +137,45 @@ public class AprilTagAutonomousInitDetection extends AutoBase
             telemetry.addLine("No tag snapshot available, it was never sighted during the init loop :(");
             telemetry.update();
         }
+
+        //driving based on signal reading; if none found, left selected
         if(tagOfInterest == null || tagOfInterest.id == LEFT){
             telemetry.addLine("LEFT");
-
             telemetry.update();
-            Drive(1,24, Direction.FORWARD);
-            Strafe(1,24, Direction.LEFT);
-
-
+            Drive(36,0.5f);
+            Strafe(0.6f, 24, Direction.LEFT);
         }else if (tagOfInterest.id == CENTER){
             telemetry.addLine("CENTER");
             telemetry.update();
-            Drive(1,24, Direction.FORWARD);
+            fl.setPower(-0.3f);
+            fr.setPower(0.3f);
+            bl.setPower(-0.3f);
+            br.setPower(0.3f);
+            this.sleep(2250);
+            fl.setPower(-0.3f);
+            fr.setPower(0.3f);
+            bl.setPower(-0.3f);
+            br.setPower(0.3f);
+            this.sleep(750);
         }else{
             telemetry.addLine("RIGHT");
             telemetry.update();
-            Drive(1, 24, Direction.FORWARD);
-            Strafe(1,24, Direction.RIGHT);
-        }
-
-
-        /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
-        while (opModeIsActive()) {sleep(20);}
+            fl.setPower(-0.3f);
+            fr.setPower(0.3f);
+            bl.setPower(-0.3f);
+            br.setPower(0.3f);
+            this.sleep(1750);
+            fl.setPower(-0.3f);
+            fr.setPower(-0.3f);
+            bl.setPower(0.3f);
+            br.setPower(0.3f);
+            this.sleep(2500);
+            fl.setPower(-0.3f);
+            fr.setPower(0.3f);
+            bl.setPower(-0.3f);
+            br.setPower(0.3f);
+            this.sleep(1050);
+       }
     }
 
     void tagToTelemetry(AprilTagDetection detection)
