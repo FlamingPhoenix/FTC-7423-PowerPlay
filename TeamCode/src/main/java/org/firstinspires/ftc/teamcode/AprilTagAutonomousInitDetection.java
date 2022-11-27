@@ -142,40 +142,20 @@ public class AprilTagAutonomousInitDetection extends AutoBase
         if(tagOfInterest == null || tagOfInterest.id == LEFT){
             telemetry.addLine("LEFT");
             telemetry.update();
-            Drive(36,0.5f);
-            Strafe(0.6f, 24, Direction.LEFT);
+            Drive(0.4f, 36f, Direction.FORWARD);
+            Strafe(0.4f, 12f, Direction.LEFT);
         }else if (tagOfInterest.id == CENTER){
             telemetry.addLine("CENTER");
             telemetry.update();
-            fl.setPower(-0.3f);
-            fr.setPower(0.3f);
-            bl.setPower(-0.3f);
-            br.setPower(0.3f);
-            this.sleep(2250);
-            fl.setPower(-0.3f);
-            fr.setPower(0.3f);
-            bl.setPower(-0.3f);
-            br.setPower(0.3f);
-            this.sleep(750);
+            AutoRoutineLEFT();
+            //Drive(0.4f, 36f, Direction.FORWARD);
+
         }else{
             telemetry.addLine("RIGHT");
             telemetry.update();
-            fl.setPower(-0.3f);
-            fr.setPower(0.3f);
-            bl.setPower(-0.3f);
-            br.setPower(0.3f);
-            this.sleep(1750);
-            fl.setPower(-0.3f);
-            fr.setPower(-0.3f);
-            bl.setPower(0.3f);
-            br.setPower(0.3f);
-            this.sleep(2500);
-            fl.setPower(-0.3f);
-            fr.setPower(0.3f);
-            bl.setPower(-0.3f);
-            br.setPower(0.3f);
-            this.sleep(1050);
-       }
+            Drive(0.4f, 36f, Direction.FORWARD);
+            Strafe(0.4f, 12f, Direction.RIGHT);
+        }
     }
 
     void tagToTelemetry(AprilTagDetection detection)

@@ -29,7 +29,6 @@ public class FieldCentric extends LinearOpMode {
         // Reverse the right side motors
         fr.setDirection(DcMotorSimple.Direction.REVERSE);
         br.setDirection(DcMotorSimple.Direction.REVERSE);
-        int targetEncoderValue = 0;
 
         // Retrieve the IMU from the hardware map
         BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
@@ -43,28 +42,27 @@ public class FieldCentric extends LinearOpMode {
         //program is active
         while (opModeIsActive()) {
             //constant lift power
-            lift.setPower(-0.25f);
 
             //different servo positions and lift power
-            if (gamepad2.dpad_left) {
+            if (gamepad1.dpad_left) {
                 fl.setPower(0.3f);
                 fr.setPower(-0.3f);
                 bl.setPower(-0.3f);
                 br.setPower(0.3f);
             }
-            if (gamepad2.dpad_right) {
+            if (gamepad1.dpad_right) {
                 fl.setPower(-0.3f);
                 fr.setPower(0.3f);
                 bl.setPower(0.3f);
                 br.setPower(-0.3f);
             }
-            if (gamepad2.dpad_up){
+            if (gamepad1.dpad_up){
                 fl.setPower(-0.3f);
                 fr.setPower(-0.3f);
                 bl.setPower(-0.3f);
                 br.setPower(-0.3f);
             }
-            if (gamepad2.dpad_down){
+            if (gamepad1.dpad_down){
                 fl.setPower(0.3f);
                 fr.setPower(0.3f);
                 bl.setPower(0.3f);
@@ -74,13 +72,41 @@ public class FieldCentric extends LinearOpMode {
                 grabber.setPosition(0.6);
             if (gamepad2.a)
                 grabber.setPosition(0.3);
-            if(gamepad2.right_stick_y<0)
-                lift.setPower(gamepad2.right_stick_y);
-            else if(gamepad2.right_stick_y>0)
-                lift.setPower(gamepad2.right_stick_y*0.5);
-
-
-            telemetry.addData("turret pos:", String.format("x:%10.3f", grabber.getPosition()));
+            lift.setPower(gamepad2.right_stick_y);
+            float liftCurrentPos = lift.getCurrentPosition();
+            telemetry.addData("Current Pos %d", liftCurrentPos);
+            telemetry.update();
+            if (gamepad2.dpad_up){
+                while(liftCurrentPos>-11750f) {
+                    liftCurrentPos = lift.getCurrentPosition();
+                    float liftPower = (liftCurrentPos + 12050f) / -12050f;
+                    if (liftPower>-0.6)
+                        liftPower = liftPower*1.5f;
+                    lift.setPower(liftPower);
+                }
+                lift.setPower(0);
+            }
+            telemetry.update();
+            if (gamepad2.dpad_right){
+                while(liftCurrentPos>-7750f) {
+                    liftCurrentPos = lift.getCurrentPosition();
+                    float liftPower = (liftCurrentPos + 8000f) / -8000f;
+                    if (liftPower>-0.6)
+                        liftPower = liftPower*1.5f;
+                    lift.setPower(liftPower);
+                }
+                lift.setPower(0);
+            }
+            if (gamepad2.dpad_left){
+                while(liftCurrentPos>-5750f) {
+                    liftCurrentPos = lift.getCurrentPosition();
+                    float liftPower = (liftCurrentPos + 6000f) / -6000f;
+                    if (liftPower>-0.6)
+                        liftPower = liftPower*1.5f;
+                    lift.setPower(liftPower);
+                }
+                lift.setPower(0);
+            }
 
             //math for field centric
             double y = -gamepad1.left_stick_y; // Remember, this is reversed!
@@ -111,7 +137,6 @@ public class FieldCentric extends LinearOpMode {
             br.setPower(0.75*brp);
 
             //turret limits + control
-            int turretPosition = turret.getCurrentPosition();
             /*telemetry.addData("turret pos:", String.format(" %d, x:%10.3f", turretPosition, gamepad2.left_stick_x));
             telemetry.update();
             if(gamepad2.left_stick_x > 0.1 || gamepad2.left_stick_x < -0.10){

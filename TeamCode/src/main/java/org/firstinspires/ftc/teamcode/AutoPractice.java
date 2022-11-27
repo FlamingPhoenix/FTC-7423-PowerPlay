@@ -11,11 +11,11 @@ public class AutoPractice extends LinearOpMode {
     DcMotor fr = null;
     DcMotor bl = null;
     DcMotor br = null;
-    DcMotor pulley = null;
+    DcMotor test = null;
     float PPR = 537.7f;
-    float diameter = 4f;
+    float diameter = 3.77952756f;
 
-    ImageNavigation image;
+    //ImageNavigation image;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -30,7 +30,15 @@ public class AutoPractice extends LinearOpMode {
 
 
         //image.switchOnVuforia();
-        Drive(24f);
+        float currentPosition;
+        fl.setPower(0.2f);
+
+        while (!isStopRequested()) {
+            currentPosition = fl.getCurrentPosition();
+            telemetry.addData("Current Pos %d", currentPosition);
+            telemetry.update();
+
+        }
         /*
         while(this.opModeIsActive()) {
             WallImageData imageData = image.ReadWallImage();
@@ -47,20 +55,20 @@ public class AutoPractice extends LinearOpMode {
         }*/
     }
     public void Drive(float distance){
-        double encoderCount = (distance/(diameter*Math.PI))*PPR;
+        double encoderCount = (distance*PPR/(diameter*(float)Math.PI));
 
         fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        while (fl.getCurrentPosition()<encoderCount){
+        while (-fl.getCurrentPosition()*4<encoderCount){
             fl.setPower(0.5);
             fr.setPower(0.5);
             bl.setPower(0.5);
             br.setPower(0.5);
-            fl.setPower(0);
-            fr.setPower(0);
-            bl.setPower(0);
-            telemetry.addData("Current Pos %d", fl.getCurrentPosition());
+
+            telemetry.addData("Current Pos %d", -fl.getCurrentPosition());
+            telemetry.addData("Current Pos %d", encoderCount);
+
             telemetry.update();
         }
         StopAllWheels();
@@ -68,6 +76,9 @@ public class AutoPractice extends LinearOpMode {
     }
     public void StopAllWheels(){
         br.setPower(0);
+        fl.setPower(0);
+        fr.setPower(0);
+        bl.setPower(0);
 
     }
     //Initialize motors, servos, and sensors
@@ -79,9 +90,11 @@ public class AutoPractice extends LinearOpMode {
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
 
         br = hardwareMap.dcMotor.get("br");
+
+        test = hardwareMap.dcMotor.get("turret");
         //pulley = hardwareMap.dcMotor.get("pulley");
 
-        image = new ImageNavigation(this);
+        //image = new ImageNavigation(this);
         //String signalLabelName = image.ReadSignal();
         //telemetry.addData("image label", signalLabelName);
         telemetry.update();

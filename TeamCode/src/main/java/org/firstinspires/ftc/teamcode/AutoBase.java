@@ -25,8 +25,9 @@ public abstract class AutoBase extends LinearOpMode {
     DcMotor fl;
     DcMotor br;
     DcMotor bl;
-    DcMotor turret;
+    DcMotor lift;
     DistanceSensor distanceSensor;
+
     Servo intakeLeft, intakeRight; //intakeLeft is not used because one servo is enough
     Servo vbarLeft, vbarRight;
     Servo grabber;
@@ -60,9 +61,105 @@ public abstract class AutoBase extends LinearOpMode {
         fl = hardwareMap.dcMotor.get("fl");
         br = hardwareMap.dcMotor.get("br");
         bl = hardwareMap.dcMotor.get("bl");
-        turret = hardwareMap.dcMotor.get("turret");
-        Servo grabber = hardwareMap.servo.get("grabber");
 
+        fr.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection((DcMotorSimple.Direction.REVERSE));
+
+        lift = hardwareMap.dcMotor.get("lift");
+        Servo grabber = hardwareMap.servo.get("grabber");
+        BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        // Technically this is the default, however specifying it is clearer
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        // Without this, data retrieving from the IMU throws an exception
+        imu.initialize(parameters);
+
+    }
+    public void AutoRoutineLEFT(){
+        intake();
+        Drive(0.4f, 24, Direction.FORWARD);
+        Turn(0.4f, 45, Direction.CLOCKWISE, imu);
+        lift.setPower(1f);
+        outtake();
+        this.sleep(250);
+        lift.setPower(1f);
+        DriveAndTurn(-0.4f, 0f, 0f);
+        this.sleep(500);
+        Turn(0.6f, 135, Direction.COUNTERCLOCKWISE, imu);
+        Drive(0.2f, 5, Direction.FORWARD);
+        setStage(1);
+        intake();
+        Drive(0.4f, 20, Direction.BACKWARD);
+        Turn(0.6f, 135, Direction.CLOCKWISE, imu);
+        lift.setPower(1f);
+        outtake();
+        this.sleep(250);
+        lift.setPower(1f);
+        DriveAndTurn(-0.4f, 0f, 0f);
+        this.sleep(500);
+        Turn(0.6f, 135, Direction.COUNTERCLOCKWISE, imu);
+        Drive(0.2f, 5, Direction.FORWARD);
+        setStage(1);
+        intake();
+        Drive(0.4f, 20, Direction.BACKWARD);
+        Turn(0.6f, 135, Direction.CLOCKWISE, imu);
+        lift.setPower(1f);
+        outtake();
+    }
+    public void DriveAndTurn(double x, double y, double rx){
+        x = x*1.1;
+        double botHeading = -imu.getAngularOrientation().firstAngle;
+
+        double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
+        double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
+
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+        double flp = (rotY + rotX + rx) / denominator;
+        double blp = (rotY - rotX + rx) / denominator;
+        double frp = (rotY - rotX - rx) / denominator;
+        double brp = (rotY + rotX - rx) / denominator;
+
+        fl.setPower(flp);
+        bl.setPower(blp);
+        fr.setPower(frp);
+        br.setPower(brp);
+
+    }
+    public void intake(){
+        grabber.setPosition(0.3);
+    }
+    public void outtake(){
+        grabber.setPosition(0.6);
+    }
+    public void setStage(int stage){
+        float liftCurrentPos = lift.getCurrentPosition();
+        if(stage == 3){
+            while(liftCurrentPos>-12000f) {
+                liftCurrentPos = lift.getCurrentPosition();
+                float liftPower = (liftCurrentPos + 12050f) / -12050f;
+                if (liftPower<0.6)
+                    liftPower = liftPower*1.5f;
+                lift.setPower(liftPower);
+            }
+        }
+        if (stage == 2 ){
+            while(liftCurrentPos>-7950f) {
+                liftCurrentPos = lift.getCurrentPosition();
+                float liftPower = (liftCurrentPos + 8000f) / -8000f;
+                if (liftPower<0.6)
+                    liftPower = liftPower*1.5f;
+                lift.setPower(liftPower);
+            }
+        }
+        if (stage == 1){
+            while(liftCurrentPos>-5950f) {
+                liftCurrentPos = lift.getCurrentPosition();
+                float liftPower = (liftCurrentPos + 6000f) / -6000f;
+                if (liftPower<0.6)
+                    liftPower = liftPower*1.5f;
+                lift.setPower(liftPower);
+            }
+        }
     }
 
     public void StopAll() {
@@ -73,60 +170,120 @@ public abstract class AutoBase extends LinearOpMode {
 
 
     }
-
-    public void Drive (float power, float distance, Direction d) {
+    public void Drive(float distance){
         float x = (PPR * distance)/(diameter * (float)Math.PI);
 
         int targetEncoderValue = Math.round(x);
 
+        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        int currentPosition = 0;
+
+        while (currentPosition < targetEncoderValue && opModeIsActive()) {
+            currentPosition = Math.abs(fr.getCurrentPosition());
+
+            fl.setPower(0.2f);
+            fr.setPower(0.2f);
+            bl.setPower(0.2f);
+            br.setPower(0.2f);
+            telemetry.addData("Current Pos %d", currentPosition);
+            telemetry.addData("target", targetEncoderValue);
+            telemetry.update();
+        }
+        StopAll();
+
+    }
+
+    public void Drive (float distance, Direction d) {
+        //tune the program by starting with Kd at 0
+        //then increase Kd until the robot will approach the position slowly with little overshoot
+
+        float Kp = 0.1f;
+        float Ki = 0.01f;
+
+        float Kd = 0; //tune this
+
+        float reference = Math.round((PPR * distance)/(diameter * (float)Math.PI));
+        if (d == Direction.BACKWARD)
+            reference = -reference;
+        double integralSum = 0;
+        float lastError = 0;
+        float out;
+        float firstAngle = imu.getAdjustedAngle();
+        float adjustmentAngle = imu.getAdjustedAngle();
+        float currentAngle;
+        float adjustment = 1;//need to tune
+        ElapsedTime timer = new ElapsedTime();
         bl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         int currentPosition = 0;
 
-        while (currentPosition < targetEncoderValue && opModeIsActive()) {
+        while (currentPosition < reference && opModeIsActive()) {
             currentPosition = Math.abs(bl.getCurrentPosition());
-            if (d == Direction.FORWARD) {
-                fl.setPower(-power);
-                fr.setPower(power);
-                bl.setPower(-power);
-                br.setPower(power);
+            float error = reference - currentPosition;
+            double derivative = (error - lastError)/timer.seconds();//derivatives are instantaneous rates of change; this is a difference quotient - essentially just a slope formula
+            integralSum = integralSum + (error*timer.seconds());//integral through riemann sums - approximating area under the curve with a bunch of rectangles
+            out = (float)((Kp*error)+(Ki*error)+(Kd*derivative));
+
+            if (Math.abs(firstAngle) >= 178) {//any number (1,179) works here
+                currentAngle = imu.getAdjustedAngle() - adjustmentAngle;
+                firstAngle = 0;
+            } else
+                currentAngle = imu.getAdjustedAngle();
 
 
-                //for (DcMotor motor : driveMotors) {
-                  //  motor.setPower(power);
+            if (Math.abs(currentAngle - firstAngle) > 1) { //error > 1 degree
+                if ((currentAngle - firstAngle) < 0)
+                    setMaxPower((out + adjustment), out, (out + adjustment), out);
+                else
+                    setMaxPower(out, (out + adjustment), out, (out + adjustment));
+            } else
+                setMaxPower(out, out, out, out);
+
+            lastError = error;
 
 
-            }
-            if (d == Direction.BACKWARD) {
-                fl.setPower(power);
-                fr.setPower(-power);
-                bl.setPower(power);
-                br.setPower(-power);
 
-            }
+            timer.reset();
         }
 
         StopAll();
 
     }
-    public void Drive(float distance, float power){
-        double encoderCount = Math.round((distance/(diameter*(float)Math.PI))*PPR);
+    public void Drive (float power, float distance, Direction d) {
+        float x = (PPR * distance)/(diameter * (float)Math.PI);
 
-        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        float currentPosition = 0;
-        while (currentPosition<encoderCount && opModeIsActive()){
-            currentPosition = fr.getCurrentPosition();
-            fl.setPower(-power);
-            fr.setPower(power);
-            bl.setPower(-power);
-            br.setPower(power);
-            telemetry.addData("Current Pos %d", fl.getCurrentPosition());
-            telemetry.update();
+        int targetEncoderValue = Math.round(x);
+
+        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        int currentPosition = 0;
+
+        while (currentPosition < targetEncoderValue && opModeIsActive()) {
+            currentPosition = Math.abs(fl.getCurrentPosition());
+            if (d == Direction.FORWARD) {
+                fl.setPower(-power);
+                fr.setPower(-power);
+                bl.setPower(-power);
+                br.setPower(-power);
+
+
+            }
+            if (d == Direction.BACKWARD) {
+                fl.setPower(power);
+                fr.setPower(power);
+                bl.setPower(power);
+                br.setPower(power);
+
+            }
         }
-        StopAllWheels();
+
+        StopAll();
+        telemetry.addLine("DONE");
+        telemetry.update();
 
     }
+
     public void StopAllWheels(){
         fr.setPower(0);
         fl.setPower(0);
@@ -156,10 +313,10 @@ public abstract class AutoBase extends LinearOpMode {
 
                 Log.i("[phoenix:angleInfo]", String.format("startingAngle = %f, targetAngle = %f, currentAngle = %f", startOrientation.firstAngle, targetangle, currentangle));
 
-                fl.setPower(-power);
-                bl.setPower(-power);
-                fr.setPower(power);
-                br.setPower(power);
+                fl.setPower(power);
+                bl.setPower(power);
+                fr.setPower(-power);
+                br.setPower(-power);
 
             }
         }
@@ -176,10 +333,10 @@ public abstract class AutoBase extends LinearOpMode {
                 this.telemetry.addData("CurrentAngle =: %f", currentangle);
                 this.telemetry.update();
 
-                fl.setPower(power);
-                bl.setPower(power);
-                fr.setPower(-power);
-                br.setPower(-power);
+                fl.setPower(-power);
+                bl.setPower(-power);
+                fr.setPower(power);
+                br.setPower(power);
 
 
             }
@@ -194,25 +351,25 @@ public abstract class AutoBase extends LinearOpMode {
 
         int targetEncoderValue = Math.round(x);
 
-        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         int currentPosition = 0;
 
         if (d == Direction.LEFT) {
             while (currentPosition < targetEncoderValue && opModeIsActive()) {
-                currentPosition = Math.abs(fr.getCurrentPosition());
+                currentPosition = Math.abs(fl.getCurrentPosition());
                 fl.setPower(power);
-                fr.setPower(power);
+                fr.setPower(-power);
                 bl.setPower(-power);
-                br.setPower(-power);
+                br.setPower(power);
             }
         } else {
             while (currentPosition < targetEncoderValue && opModeIsActive()) {
-                currentPosition = Math.abs(fr.getCurrentPosition());
+                currentPosition = Math.abs(fl.getCurrentPosition());
                 fl.setPower(-power);
-                fr.setPower(-power);
+                fr.setPower(power);
                 bl.setPower(power);
-                br.setPower(power);
+                br.setPower(-power);
             }
         }
 
@@ -764,62 +921,7 @@ public abstract class AutoBase extends LinearOpMode {
 
     }
 
-    public void Drive (float distance, Direction d) {
-        //tune the program by starting with Kd at 0
-        //then increase Kd until the robot will approach the position slowly with little overshoot
 
-        float Kp = 0.1f;
-        float Ki = 0.01f;
-
-        float Kd = 0; //tune this
-
-        float reference = Math.round((PPR * distance)/(diameter * (float)Math.PI));
-        if (d == Direction.BACKWARD)
-            reference = -reference;
-        double integralSum = 0;
-        float lastError = 0;
-        float out;
-        float firstAngle = imu.getAdjustedAngle();
-        float adjustmentAngle = imu.getAdjustedAngle();
-        float currentAngle;
-        float adjustment = 1;//need to tune
-        ElapsedTime timer = new ElapsedTime();
-        bl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        int currentPosition = 0;
-
-        while (currentPosition < reference && opModeIsActive()) {
-            currentPosition = Math.abs(bl.getCurrentPosition());
-            float error = reference - currentPosition;
-            double derivative = (error - lastError)/timer.seconds();//derivatives are instantaneous rates of change; this is a difference quotient - essentially just a slope formula
-            integralSum = integralSum + (error*timer.seconds());//integral through riemann sums - approximating area under the curve with a bunch of rectangles
-            out = (float)((Kp*error)+(Ki*error)+(Kd*derivative));
-
-            if (Math.abs(firstAngle) >= 178) {//any number (1,179) works here
-                currentAngle = imu.getAdjustedAngle() - adjustmentAngle;
-                firstAngle = 0;
-            } else
-                currentAngle = imu.getAdjustedAngle();
-
-
-            if (Math.abs(currentAngle - firstAngle) > 1) { //error > 1 degree
-                if ((currentAngle - firstAngle) < 0)
-                    setMaxPower((out + adjustment), out, (out + adjustment), out);
-                else
-                    setMaxPower(out, (out + adjustment), out, (out + adjustment));
-            } else
-                setMaxPower(out, out, out, out);
-
-            lastError = error;
-
-
-
-            timer.reset();
-        }
-
-        StopAll();
-
-    }
 
     public void velocityControl (float velocity, int totalTime, DcMotor dcmotor) { //controls velocity of robot in inches/seconds
 
