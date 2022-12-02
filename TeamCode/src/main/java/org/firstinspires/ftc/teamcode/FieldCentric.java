@@ -19,11 +19,11 @@ public class FieldCentric extends LinearOpMode {
         DcMotor turret;
         DcMotor lift;
         Servo grabber;
-        turret = hardwareMap.dcMotor.get("turret");
+        //turret = hardwareMap.dcMotor.get("turret");
         lift = hardwareMap.dcMotor.get("lift");
         grabber = hardwareMap.servo.get("grabber");
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // Reverse the right side motors
@@ -83,6 +83,7 @@ public class FieldCentric extends LinearOpMode {
                     if (liftPower>-0.6)
                         liftPower = liftPower*1.5f;
                     lift.setPower(liftPower);
+                    telemetry.addData("Current Pos %d", liftCurrentPos);
                 }
                 lift.setPower(0);
             }
@@ -125,16 +126,21 @@ public class FieldCentric extends LinearOpMode {
             double blp = -(rotY - rotX + rx) / denominator;
             double frp = -(rotY - rotX - rx) / denominator;
             double brp = -(rotY + rotX - rx) / denominator;
-            if (gamepad1.left_trigger>0.2){
+            /*if (gamepad1.left_trigger>0.2){
                 flp = ((1.2-gamepad1.left_trigger) *flp);
                 blp = ((1.2-gamepad1.left_trigger) *blp);
                 frp = ((1.2-gamepad1.left_trigger) *frp);
                 brp = ((1.2-gamepad1.left_trigger)  *brp);
-            }
-            fl.setPower(0.75*flp);
-            bl.setPower(0.75*blp);
-            fr.setPower(0.75*frp);
-            br.setPower(0.75*brp);
+            }*/
+            flp = flp * (1 + 2*gamepad1.left_trigger);
+            blp = blp * (1 + 2*gamepad1.left_trigger);
+            frp = frp * (1 + 2*gamepad1.left_trigger);
+            brp = brp * (1 + 2*gamepad1.left_trigger);
+
+            fl.setPower(0.33*flp);
+            bl.setPower(0.33*blp);
+            fr.setPower(0.33*frp);
+            br.setPower(0.33*brp);
 
             //turret limits + control
             /*telemetry.addData("turret pos:", String.format(" %d, x:%10.3f", turretPosition, gamepad2.left_stick_x));

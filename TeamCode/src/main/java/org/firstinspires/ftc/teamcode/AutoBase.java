@@ -126,10 +126,10 @@ public abstract class AutoBase extends LinearOpMode {
 
     }
     public void intake(){
-        grabber.setPosition(0.3);
+        grabber.setPosition(0.6);
     }
     public void outtake(){
-        grabber.setPosition(0.6);
+        grabber.setPosition(0.3);
     }
     public void setStage(int stage){
         float liftCurrentPos = lift.getCurrentPosition();
@@ -137,7 +137,7 @@ public abstract class AutoBase extends LinearOpMode {
             while(liftCurrentPos>-12000f) {
                 liftCurrentPos = lift.getCurrentPosition();
                 float liftPower = (liftCurrentPos + 12050f) / -12050f;
-                if (liftPower<0.6)
+                if (liftPower>-0.6)
                     liftPower = liftPower*1.5f;
                 lift.setPower(liftPower);
             }
@@ -146,7 +146,7 @@ public abstract class AutoBase extends LinearOpMode {
             while(liftCurrentPos>-7950f) {
                 liftCurrentPos = lift.getCurrentPosition();
                 float liftPower = (liftCurrentPos + 8000f) / -8000f;
-                if (liftPower<0.6)
+                if (liftPower>-0.6)
                     liftPower = liftPower*1.5f;
                 lift.setPower(liftPower);
             }
@@ -155,7 +155,7 @@ public abstract class AutoBase extends LinearOpMode {
             while(liftCurrentPos>-5950f) {
                 liftCurrentPos = lift.getCurrentPosition();
                 float liftPower = (liftCurrentPos + 6000f) / -6000f;
-                if (liftPower<0.6)
+                if (liftPower>-0.6)
                     liftPower = liftPower*1.5f;
                 lift.setPower(liftPower);
             }
