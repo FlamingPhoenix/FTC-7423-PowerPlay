@@ -2,19 +2,27 @@ package org.firstinspires.ftc.teamcode;
 
 import android.util.Log;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorDigitalTouch;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 //import org.openftc.easyopencv.OpenCvCamera;
 //import org.openftc.easyopencv.OpenCvCameraFactory;
 //import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -27,6 +35,8 @@ public abstract class AutoBase extends LinearOpMode {
     DcMotor bl;
     DcMotor lift;
     DistanceSensor distanceSensor;
+    SampleMecanumDrive drive;
+
 
     Servo intakeLeft, intakeRight; //intakeLeft is not used because one servo is enough
     Servo vbarLeft, vbarRight;
@@ -41,6 +51,7 @@ public abstract class AutoBase extends LinearOpMode {
     public Servo pivotLeft;
     public Servo pivotRight;
 
+    public DigitalChannel touch;
     public float PPR = 537.7f; //537.7 for actual robot; 1120 for programming bot
 
     public float maxEncoderPulley = 420f;
@@ -54,7 +65,7 @@ public abstract class AutoBase extends LinearOpMode {
     public float startHeading;
 
     public int currentStage, currentPosition;
-
+    TrajectorySequence traj;
 
     public void initialize (){
         fr = hardwareMap.dcMotor.get("fr");
@@ -62,114 +73,84 @@ public abstract class AutoBase extends LinearOpMode {
         br = hardwareMap.dcMotor.get("br");
         bl = hardwareMap.dcMotor.get("bl");
 
-        fr.setDirection(DcMotorSimple.Direction.REVERSE);
-        br.setDirection((DcMotorSimple.Direction.REVERSE));
+
+        DigitalChannel touch = hardwareMap.get(DigitalChannel.class, "touch");
+
+        // set the digital channel to input.
+        //touch.setMode(DigitalChannel.Mode.INPUT);
 
         lift = hardwareMap.dcMotor.get("lift");
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         Servo grabber = hardwareMap.servo.get("grabber");
-        BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        //BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
+        //BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         // Technically this is the default, however specifying it is clearer
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        //parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         // Without this, data retrieving from the IMU throws an exception
-        imu.initialize(parameters);
-
+        //imu.initialize(parameters);
     }
-    public void AutoRoutineLEFT(){
-        intake();
-        Drive(0.4f, 24, Direction.FORWARD);
-        Turn(0.4f, 45, Direction.CLOCKWISE, imu);
-        lift.setPower(1f);
-        outtake();
-        this.sleep(250);
-        lift.setPower(1f);
-        DriveAndTurn(-0.4f, 0f, 0f);
-        this.sleep(500);
-        Turn(0.6f, 135, Direction.COUNTERCLOCKWISE, imu);
-        Drive(0.2f, 5, Direction.FORWARD);
-        setStage(1);
-        intake();
-        Drive(0.4f, 20, Direction.BACKWARD);
-        Turn(0.6f, 135, Direction.CLOCKWISE, imu);
-        lift.setPower(1f);
-        outtake();
-        this.sleep(250);
-        lift.setPower(1f);
-        DriveAndTurn(-0.4f, 0f, 0f);
-        this.sleep(500);
-        Turn(0.6f, 135, Direction.COUNTERCLOCKWISE, imu);
-        Drive(0.2f, 5, Direction.FORWARD);
-        setStage(1);
-        intake();
-        Drive(0.4f, 20, Direction.BACKWARD);
-        Turn(0.6f, 135, Direction.CLOCKWISE, imu);
-        lift.setPower(1f);
-        outtake();
-    }
-    public void DriveAndTurn(double x, double y, double rx){
-        x = x*1.1;
-        double botHeading = -imu.getAngularOrientation().firstAngle;
 
-        double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
-        double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
 
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-        double flp = (rotY + rotX + rx) / denominator;
-        double blp = (rotY - rotX + rx) / denominator;
-        double frp = (rotY - rotX - rx) / denominator;
-        double brp = (rotY + rotX - rx) / denominator;
-
-        fl.setPower(flp);
-        bl.setPower(blp);
-        fr.setPower(frp);
-        br.setPower(brp);
-
-    }
     public void intake(){
-        grabber.setPosition(0.6);
+        grabber.setPosition(1);
     }
     public void outtake(){
-        grabber.setPosition(0.3);
+        grabber.setPosition(0.6);
     }
-    public void setStage(int stage){
-        float liftCurrentPos = lift.getCurrentPosition();
-        if(stage == 3){
-            while(liftCurrentPos>-12000f) {
-                liftCurrentPos = lift.getCurrentPosition();
-                float liftPower = (liftCurrentPos + 12050f) / -12050f;
-                if (liftPower>-0.6)
-                    liftPower = liftPower*1.5f;
-                lift.setPower(liftPower);
+    public void setStage(int coneNumber){
+        float currentPos = lift.getCurrentPosition();
+        if (coneNumber == 5){
+            while (currentPos <-140){
+                lift.setPower(0.3f);
+                currentPos = lift.getCurrentPosition();
+                telemetry.addData("Current Pos %d", currentPos);
+                telemetry.update();
             }
-        }
-        if (stage == 2 ){
-            while(liftCurrentPos>-7950f) {
-                liftCurrentPos = lift.getCurrentPosition();
-                float liftPower = (liftCurrentPos + 8000f) / -8000f;
-                if (liftPower>-0.6)
-                    liftPower = liftPower*1.5f;
-                lift.setPower(liftPower);
-            }
-        }
-        if (stage == 1){
-            while(liftCurrentPos>-5950f) {
-                liftCurrentPos = lift.getCurrentPosition();
-                float liftPower = (liftCurrentPos + 6000f) / -6000f;
-                if (liftPower>-0.6)
-                    liftPower = liftPower*1.5f;
-                lift.setPower(liftPower);
-            }
-        }
-    }
 
+        }
+        else if (coneNumber == 4){
+            while (currentPos <-105){
+                lift.setPower(0.3f);
+                currentPos = lift.getCurrentPosition();
+                telemetry.addData("Current Pos %d", currentPos);
+                telemetry.update();
+            }
+
+        }
+        else if (coneNumber == 3){
+            while (currentPos <-70){
+                lift.setPower(0.3f);
+                currentPos = lift.getCurrentPosition();
+                telemetry.addData("Current Pos %d", currentPos);
+                telemetry.update();
+            }
+
+        }
+        else if (coneNumber == 2){
+            while (currentPos <-35){
+                lift.setPower(0.3f);
+                currentPos = lift.getCurrentPosition();
+                telemetry.addData("Current Pos %d", currentPos);
+                telemetry.update();
+            }
+
+        }
+        else{
+            lift.setPower(1f);
+        }
+        lift.setPower(-0.15f);
+    }
+    public void AutoRoutineLEFT(){
+        drive.followTrajectorySequence(traj);
+    }
     public void StopAll() {
         fl.setPower(0);
         fr.setPower(0);
         bl.setPower(0);
         br.setPower(0);
-
-
     }
+
     public void Drive(float distance){
         float x = (PPR * distance)/(diameter * (float)Math.PI);
 
