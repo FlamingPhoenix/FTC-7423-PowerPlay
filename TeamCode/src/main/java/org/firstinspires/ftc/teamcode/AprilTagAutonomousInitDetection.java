@@ -85,7 +85,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     lift.setPower(-1f);
                     this.sleep(250);
                 })
-                .lineToSplineHeading(new Pose2d(54, -18, Math.toRadians(0)),
+                .lineToSplineHeading(new Pose2d(54, -17, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker(() -> {
@@ -107,7 +107,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     lift.setPower(-1f);
                     this.sleep(250);
                 })
-                .lineToSplineHeading(new Pose2d(55, -18, Math.toRadians(0)),
+                .lineToSplineHeading(new Pose2d(55, -17, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker(() -> {
@@ -129,7 +129,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     lift.setPower(-1f);
                     this.sleep(250);
                 })
-                .lineToSplineHeading(new Pose2d(55, -18, Math.toRadians(0)),
+                .lineToSplineHeading(new Pose2d(55, -17, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker(() -> {
@@ -151,13 +151,16 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     lift.setPower(-1f);
                     this.sleep(250);
                 })
-                .lineToSplineHeading(new Pose2d(55, -18, Math.toRadians(0)),
+                .lineToSplineHeading(new Pose2d(55, -17, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(0.7f);
                     this.sleep(1000);
                     telemetry.addLine("2");
+                })
+                .addDisplacementMarker(()->{
+                    lift.setPower(1f);
                 })
 
                 .build();
