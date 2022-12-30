@@ -22,9 +22,9 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
 
 import java.util.ArrayList;
 
-@Autonomous(name="April 5 CONES", group="none")
+@Autonomous(name="April 4 CONES - COP", group="none")
 
-public class AprilTagAutonomousInitDetection extends AutoBase
+public class AprilComp extends AutoBase
 {
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -63,7 +63,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                 .addTemporalMarker(1.5, () -> {
                     lift.setPower(-1f);
                 })
-                .lineToSplineHeading(new Pose2d(54.5, -7.5, Math.toRadians(315)),
+                .lineToSplineHeading(new Pose2d(55.5, -9, Math.toRadians(315)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker(() -> {
@@ -75,7 +75,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     this.sleep(350);
 
                 })
-                .lineToSplineHeading(new Pose2d(46, 28.5, Math.toRadians(75)),
+                .lineToSplineHeading(new Pose2d(51, 25.5, Math.toRadians(75)),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
 
@@ -85,7 +85,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     lift.setPower(-1f);
                     this.sleep(250);
                 })
-                .lineToSplineHeading(new Pose2d(52.5, -14.5, Math.toRadians(0)),
+                .lineToSplineHeading(new Pose2d(54, -17, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker(() -> {
@@ -97,7 +97,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     this.sleep(350);
 
                 })
-                .lineToSplineHeading(new Pose2d(48, 28.5, Math.toRadians(75)),
+                .lineToSplineHeading(new Pose2d(51, 25.5, Math.toRadians(75)),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
 
@@ -107,7 +107,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     lift.setPower(-1f);
                     this.sleep(250);
                 })
-                .lineToSplineHeading(new Pose2d(52.5, -14, Math.toRadians(0)),
+                .lineToSplineHeading(new Pose2d(55, -17, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker(() -> {
@@ -119,7 +119,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     this.sleep(350);
 
                 })
-                .lineToSplineHeading(new Pose2d(48, 28.5, Math.toRadians(75)),
+                .lineToSplineHeading(new Pose2d(51, 25.5, Math.toRadians(75)),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
 
@@ -129,7 +129,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     lift.setPower(-1f);
                     this.sleep(250);
                 })
-                .lineToSplineHeading(new Pose2d(52.5, -14, Math.toRadians(0)),
+                .lineToSplineHeading(new Pose2d(55, -17, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker(() -> {
@@ -140,27 +140,13 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                     lift.setPower(-0.15f);
                     this.sleep(350);
                 })
-
-                .lineToSplineHeading(new Pose2d(48, 28.5, Math.toRadians(75)),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
-
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(1.1f);
-                    this.sleep(400);
-                    lift.setPower(-1f);
-                    this.sleep(250);
-                })
-                .lineToSplineHeading(new Pose2d(52.5, -14, Math.toRadians(0)),
-                        SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(0.7f);
                     this.sleep(1000);
                     telemetry.addLine("2");
                 })
                 .addDisplacementMarker(()->{
-                    lift.setPower(1f);
+                    lift.setPower(0.5f);
                 })
 
                 .build();
@@ -277,29 +263,20 @@ public class AprilTagAutonomousInitDetection extends AutoBase
             grabber.setPosition(1.1f);
             drive.followTrajectorySequence(traj);
             lift.setPower(1f);
-            grabber.setPosition(0.7f);
-            this.sleep(350);
-            lift.setPower(1f);
-            Strafe(1f, 32, Direction.RIGHT);
+            Strafe(0.8f, 30, Direction.RIGHT);
         }else if (tagOfInterest.id == CENTER){
             telemetry.addLine("CENTER");
             telemetry.update();
             grabber.setPosition(1.1f);
 
             drive.followTrajectorySequence(traj);
-            grabber.setPosition(0.7f);
-            this.sleep(350);
-            lift.setPower(1f);
-            Strafe(1f, 10, Direction.RIGHT);
+            Strafe(0.8f, 10, Direction.RIGHT);
         }else{
             telemetry.addLine("RIGHT");
             telemetry.update();
             grabber.setPosition(1.1f);
             drive.followTrajectorySequence(traj);
-            grabber.setPosition(0.7f);
-            this.sleep(350);
-            lift.setPower(1f);
-            Strafe(1f, 6, Direction.LEFT);
+            Strafe(0.8f, 8, Direction.LEFT);
 
         }
     }
