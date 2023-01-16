@@ -55,6 +55,8 @@ public class AprilTagAutonomousInitDetection extends AutoBase
         Servo grabber = hardwareMap.servo.get("grabber");
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
+        StaticIMU.imu = drive.imu;
+
         TrajectorySequence traj = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(0)))
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(1.1f);
