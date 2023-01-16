@@ -39,9 +39,9 @@ public class Tele extends OpMode{
 
     public void Drive(float x1, float y1, float x2) {
 
-        float frontLeft = (y1 + x1 + x2);
-        float frontRight = -y1 - x1 - x2;
-        float backLeft = -(y1 - x1 + x2);
+        float frontLeft = y1 + x1 + x2;
+        float frontRight = y1 - x1 - x2;
+        float backLeft = y1 - x1 + x2;
         float backRight = y1 + x1 - x2;
 
         frontLeft = Range.clip(frontLeft, -1, 1);
@@ -63,19 +63,17 @@ public class Tele extends OpMode{
         fl = hardwareMap.dcMotor.get("fl");
         br = hardwareMap.dcMotor.get("br");
         bl = hardwareMap.dcMotor.get("bl");
-        turret = hardwareMap.dcMotor.get("turret");
-        lift = hardwareMap.dcMotor.get("lift");
-        grabber = hardwareMap.servo.get("grabber");
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //grabber = hardwareMap.servo.get("grabber");
+        /*turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);*/
 
 
         // Reverse the right side motors
         // Reverse left motors if you are using NeveRests
-        fr.setDirection(DcMotorSimple.Direction.REVERSE);
-        br.setDirection(DcMotorSimple.Direction.REVERSE);
+        fl.setDirection(DcMotorSimple.Direction.REVERSE);
+        bl.setDirection(DcMotorSimple.Direction.REVERSE);
         telemetry.addData("Ready for start %f", 0);
         telemetry.update();
 
@@ -93,7 +91,7 @@ public class Tele extends OpMode{
         y1 = gamepad1.left_stick_y;
         x2 = gamepad1.right_stick_x;
         y2 = gamepad1.right_stick_y;
-        lift.setPower(-0.25f);
+        /*lift.setPower(-0.25f);
         if (gamepad2.dpad_left)
             grabber.setPosition(0.3);
         if (gamepad2.a)
@@ -110,7 +108,7 @@ public class Tele extends OpMode{
         telemetry.addData("lift pos:", lift.getCurrentPosition());
 
         int turretPosition = turret.getCurrentPosition();
-        telemetry.addData("turret pos:", String.format(" %d, x:%10.3f", turretPosition, gamepad2.left_stick_x));
+        telemetry.addData("turret pos:", String.format(" %d, x:%10.3f", turretPosition, gamepad2.left_stick_x));*/
 
         /*if(gamepad2.left_stick_x > 0.1 || gamepad2.left_stick_x < -0.10){
             if (gamepad2.left_stick_x < -0.1 && turretPosition >= -203) {
