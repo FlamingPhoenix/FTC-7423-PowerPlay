@@ -8,12 +8,12 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TestTeleOp", group="Robot")
 public class TeleOp extends OpMode {
 
     DcMotor fl, fr, bl, br, lift;
     Servo grabber;
-    //BNO055IMU imu;
+    BNO055IMU imu;
 
 
     boolean goForHigh = false, goForMiddle = false, goForLow = false,
@@ -44,10 +44,10 @@ public class TeleOp extends OpMode {
         br.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Retrieve the IMU from the hardware map
-        //imu = hardwareMap.get(BNO055IMU.class, "imu");
-        //BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        //parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-        //imu.initialize(parameters);
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        imu.initialize(parameters);
 
 
     }
@@ -78,7 +78,11 @@ public class TeleOp extends OpMode {
 
         telemetry.addData("Current Pos %d", liftCurrentPos);
         telemetry.update();
-
+        if (gamepad1.left_bumper && gamepad1.right_bumper){
+            BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+            parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+            imu.initialize(parameters);
+        }
         if (gamepad2.dpad_up) {
             goForHigh = true;
             goForMiddle = false;
@@ -146,7 +150,15 @@ public class TeleOp extends OpMode {
         double y = -gamepad1.left_stick_y; // Remember, this is reversed!
         double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
         double rx = gamepad1.right_stick_x;
-        double botHeading = -(SampleMecanumDrive.imu).getAngularOrientation().firstAngle;
+        while (GlobalImu.imuAngle+imu.getAngularOrientation().firstAngle>179 || GlobalImu.imuAngle+imu.getAngularOrientation().firstAngle<-179){
+            if (GlobalImu.imuAngle+imu.getAngularOrientation().firstAngle>0){
+                GlobalImu.imuAngle = GlobalImu.imuAngle-180;
+            }
+            if (GlobalImu.imuAngle+imu.getAngularOrientation().firstAngle<0){
+                GlobalImu.imuAngle = GlobalImu.imuAngle+180;
+            }
+        }
+        double botHeading = -(imu).getAngularOrientation().firstAngle;
         double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
         double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
 

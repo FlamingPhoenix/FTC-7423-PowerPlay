@@ -48,12 +48,14 @@ public class FieldCentric extends LinearOpMode {
         boolean goForHigh = false, goForMiddle = false, goForLow = false,
                 goReleaseCone = false, processReleaseCone = false;
        int liftReleaseStartPos = 0;
-
-        waitForStart();
-
-        if (isStopRequested()) return;
+       //waitForStart();
+       while  (!opModeIsActive() && !isStopRequested()){
+           telemetry.addData("status","still  waiting for start");
+           telemetry.update();
+       }
+        //if (isStopRequested()) return;
         //program is active
-        while (opModeIsActive()) {
+        while (isStarted() && opModeIsActive()) {
             //constant lift power
             lift.setPower(-0.15f);
 
@@ -70,17 +72,22 @@ public class FieldCentric extends LinearOpMode {
             }
             if (gamepad2.left_stick_y>0.1f) { //Drive is using the joystick to move lift down
                 if (touch.getState())
-                    lift.setPower(0.5 * gamepad2.left_stick_y);
+                    lift.setPower( gamepad2.left_stick_y);
             }
             if (gamepad2.right_bumper && !goReleaseCone && !processReleaseCone && lift.getCurrentPosition()<-125){
                 goReleaseCone = true;
             }
             float liftCurrentPos = lift.getCurrentPosition();
-            telemetry.addData("Current Pos %b", touch.getState());
 
             telemetry.addData("Current Pos %d", liftCurrentPos);
             telemetry.update();
 
+            if (gamepad2.right_bumper) {
+                parameters = new BNO055IMU.Parameters();
+                parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+                imu.initialize(parameters);
+
+            }
             if (gamepad2.dpad_up) {
                 goForHigh = true;
                 goForMiddle = false;

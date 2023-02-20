@@ -18,33 +18,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name="rigtest", group="none")
 
-public class RigTest extends LinearOpMode{
+public class RigTest extends AutoBase{
     @Override
     public void runOpMode() throws InterruptedException {
+        initialize();
+
         waitForStart();
-        DcMotor motor = hardwareMap.dcMotor.get("motor");
-        Servo servo;
-        double x;
-        servo = hardwareMap.servo.get("servo");
-        DistanceSensor sensor;
-        sensor = hardwareMap.get(DistanceSensor.class, "sensor");
-        while (opModeIsActive()){
-            x = sensor.getDistance(DistanceUnit.INCH);
-            double y = 0.5;
-            x = sensor.getDistance(DistanceUnit.INCH);
-            Log.i("[phoenix:angleInfo]", String.format("Distance = %f,", x));
-            motor.setPower(y);
-            if (0==0){
-                servo.setPosition(1);
-                sleep(1000);
-            }
-            if (0==0){
-                servo.setPosition(0);
-                sleep(1000);
-            }
-
-
-        }
-
+        while (!isStopRequested())
+            distanceTune();
     }
 }

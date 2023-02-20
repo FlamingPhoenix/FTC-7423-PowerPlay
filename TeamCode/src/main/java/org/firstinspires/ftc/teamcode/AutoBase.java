@@ -6,11 +6,13 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
@@ -34,7 +36,7 @@ public abstract class AutoBase extends LinearOpMode {
     DcMotor br;
     DcMotor bl;
     DcMotor lift;
-    DistanceSensor distanceSensor;
+    DistanceSensor distanceLeft, distanceMid, distanceRight;
     SampleMecanumDrive drive;
 
 
@@ -67,6 +69,8 @@ public abstract class AutoBase extends LinearOpMode {
     public int currentStage, currentPosition;
     TrajectorySequence traj;
 
+    //BNO055IMU imu;
+
     public void initialize (){
         fr = hardwareMap.dcMotor.get("fr");
         fl = hardwareMap.dcMotor.get("fl");
@@ -83,10 +87,16 @@ public abstract class AutoBase extends LinearOpMode {
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         Servo grabber = hardwareMap.servo.get("grabber");
-        //BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
-        //BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        distanceLeft = hardwareMap.get(DistanceSensor.class, "dl");
+        distanceMid = hardwareMap.get(DistanceSensor.class, "dm");
+        distanceRight = hardwareMap.get(DistanceSensor.class, "dr");
+
+        imu = new MyIMU(hardwareMap);
+        //imu = hardwareMap.get(BNO055IMU.class, "imu");
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         // Technically this is the default, however specifying it is clearer
-        //parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        imu.initialize(parameters);
         // Without this, data retrieving from the IMU throws an exception
         //imu.initialize(parameters);
     }
@@ -97,6 +107,35 @@ public abstract class AutoBase extends LinearOpMode {
     }
     public void outtake(){
         grabber.setPosition(0.6);
+    }
+    public void distanceTune() {
+        double d1 = distanceLeft.getDistance(DistanceUnit.CM);
+        double d2 = distanceRight.getDistance(DistanceUnit.CM);
+        double d3 = distanceMid.getDistance(DistanceUnit.CM);
+
+        telemetry.addData("left %d", d1);
+        telemetry.addData("right %d", d2);
+        telemetry.addData("middle %d", d3);
+        telemetry.update();
+        double d4;
+        float b;/*
+        if (d1 > d2) {
+            d4 = d2;
+            d2 = d1;
+            d1 = d4;
+            b = 1;
+        }
+        if (d1 < d2){
+            telemetry.addLine("PASSED");
+            telemetry.update();
+            double x1 = ((Math.pow(d1, 2) + Math.pow(d2, 2)) + 484) / 44;
+            double y = Math.pow((Math.pow(d1, 2) + Math.pow(x1, 2)), 0.5f);
+            double angle = Math.toDegrees(Math.asin(y / d3));
+            //double newAngle = imu.getAdjustedAngle()+90-angle;
+            Turn(0.4f,90-angle,Direction.CLOCKWISE, imu );
+        }*/
+
+
     }
     public void setStage(int coneNumber){
         float currentPos = lift.getCurrentPosition();
@@ -274,13 +313,13 @@ public abstract class AutoBase extends LinearOpMode {
 
 
 
-    public void Turn (float power, int angle, Direction turnDirection, MyIMU imu) {
+    public void Turn (float power, double angle, Direction turnDirection, MyIMU imu) {
 
 
         Orientation startOrientation = imu.getAngularOrientation();
 
-        float targetangle;
-        float currentangle;
+        double targetangle;
+        double currentangle;
 
         imu.reset(turnDirection);
         if (turnDirection == Direction.COUNTERCLOCKWISE) {
@@ -339,16 +378,16 @@ public abstract class AutoBase extends LinearOpMode {
         if (d == Direction.LEFT) {
             while (currentPosition < targetEncoderValue && opModeIsActive()) {
                 currentPosition = Math.abs(fl.getCurrentPosition());
-                fl.setPower(power);
-                fr.setPower(-power);
+                fl.setPower(0.85f*power);
+                fr.setPower(0.85f*-power);
                 bl.setPower(-power);
                 br.setPower(power);
             }
         } else {
             while (currentPosition < targetEncoderValue && opModeIsActive()) {
                 currentPosition = Math.abs(fl.getCurrentPosition());
-                fl.setPower(-power);
-                fr.setPower(power);
+                fl.setPower(0.85f*-power);
+                fr.setPower(0.85f*power);
                 bl.setPower(power);
                 br.setPower(-power);
             }
@@ -613,7 +652,7 @@ public abstract class AutoBase extends LinearOpMode {
         float startAngle = imu.getAdjustedAngle();
 
         float x = endX - startX;
-        float y = endY - startY;
+        float y = endY - startY;`
 
         float distance = (float) Math.sqrt(x*x + y*y);
 
@@ -893,9 +932,6 @@ public abstract class AutoBase extends LinearOpMode {
             sleep(100);
             neg *= -1;
         }
-    }
-    public void testInitialize(){
-        distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
     }
     @Override
     public void runOpMode() throws InterruptedException {

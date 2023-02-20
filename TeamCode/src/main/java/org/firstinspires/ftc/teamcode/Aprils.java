@@ -170,7 +170,9 @@ public class Aprils extends AutoBase
             grabber.setPosition(1.1f);
             this.sleep(500);
             Drive(0.6f, 22, Direction.BACKWARD);
-            Strafe(0.8f, 16, Direction.RIGHT);
+            Strafe(0.8f, 17, Direction.RIGHT);
+            Drive(0.4f, 10, Direction.BACKWARD);
+
 
             grabber.setPosition(0.7f);
         }else if (tagOfInterest.id == CENTER){
@@ -178,7 +180,7 @@ public class Aprils extends AutoBase
             telemetry.update();
             grabber.setPosition(1.1f);
             this.sleep(500);
-            Drive(0.6f, 22, Direction.BACKWARD);
+            Drive(0.6f, 28, Direction.BACKWARD);
             grabber.setPosition(0.7f);
 
         }else{
@@ -187,7 +189,8 @@ public class Aprils extends AutoBase
             grabber.setPosition(1.1f);
             this.sleep(500);
             Drive(0.4f, 24, Direction.BACKWARD);
-            Strafe(0.8f, 16, Direction.LEFT);
+            Strafe(0.8f, 17, Direction.LEFT);
+            Drive(0.4f, 10, Direction.BACKWARD);
 
             grabber.setPosition(0.7f);
         }

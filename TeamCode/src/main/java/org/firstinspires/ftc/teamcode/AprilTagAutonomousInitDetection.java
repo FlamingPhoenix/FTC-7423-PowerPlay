@@ -55,7 +55,6 @@ public class AprilTagAutonomousInitDetection extends AutoBase
         Servo grabber = hardwareMap.servo.get("grabber");
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        StaticIMU.imu = drive.imu;
 
         TrajectorySequence traj = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(0)))
                 .addDisplacementMarker(() -> {
@@ -67,7 +66,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                 })
                 .lineToSplineHeading(new Pose2d(54.5, -7.5, Math.toRadians(315)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        SampleMecanumDrive.getAccelerationConstraint(20))
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(0.7f);
                     this.sleep(350);
@@ -79,7 +78,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                 })
                 .lineToSplineHeading(new Pose2d(46, 28.5, Math.toRadians(75)),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        SampleMecanumDrive.getAccelerationConstraint(20))
 
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(1.1f);
@@ -89,7 +88,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                 })
                 .lineToSplineHeading(new Pose2d(52.5, -14.5, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        SampleMecanumDrive.getAccelerationConstraint(20))
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(0.7f);
                     this.sleep(350);
@@ -101,7 +100,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                 })
                 .lineToSplineHeading(new Pose2d(48, 28.5, Math.toRadians(75)),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        SampleMecanumDrive.getAccelerationConstraint(20))
 
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(1.1f);
@@ -111,7 +110,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                 })
                 .lineToSplineHeading(new Pose2d(52.5, -14, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        SampleMecanumDrive.getAccelerationConstraint(20))
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(0.7f);;
                     this.sleep(350);
@@ -123,7 +122,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                 })
                 .lineToSplineHeading(new Pose2d(48, 28.5, Math.toRadians(75)),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        SampleMecanumDrive.getAccelerationConstraint(20))
 
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(1.1f);
@@ -133,7 +132,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                 })
                 .lineToSplineHeading(new Pose2d(52.5, -14, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        SampleMecanumDrive.getAccelerationConstraint(20))
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(0.7f);
                     this.sleep(350);
@@ -145,7 +144,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
 
                 .lineToSplineHeading(new Pose2d(48, 28.5, Math.toRadians(75)),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        SampleMecanumDrive.getAccelerationConstraint(20))
 
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(1.1f);
@@ -155,7 +154,7 @@ public class AprilTagAutonomousInitDetection extends AutoBase
                 })
                 .lineToSplineHeading(new Pose2d(52.5, -14, Math.toRadians(0)),
                         SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(40))
+                        SampleMecanumDrive.getAccelerationConstraint(20))
                 .addDisplacementMarker(() -> {
                     grabber.setPosition(0.7f);
                     this.sleep(1000);
