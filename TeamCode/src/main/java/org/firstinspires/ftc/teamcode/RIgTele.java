@@ -31,7 +31,8 @@ public class RIgTele extends LinearOpMode{
         leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "fr"));
         rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "bl"));
         frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "br"));
-        NormalizedColorSensor colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
+        NormalizedColorSensor colorSensor = hardwareMap.get(NormalizedColorSensor.class, "csr");
+        NormalizedColorSensor colorSensor1 = hardwareMap.get(NormalizedColorSensor.class, "csl");
 
         waitForStart();
         if (isStopRequested()) return;
@@ -46,6 +47,11 @@ public class RIgTele extends LinearOpMode{
                     .addData("Red", "%.3f", colors.red)
                     .addData("Green", "%.3f", colors.green)
                     .addData("Blue", "%.3f", colors.blue);
+            NormalizedRGBA colors1 = colorSensor1.getNormalizedColors();
+            telemetry.addLine()
+                    .addData("Red", "%.3f", colors1.red)
+                    .addData("Green", "%.3f", colors1.green)
+                    .addData("Blue", "%.3f", colors1.blue);
         }
 
     }

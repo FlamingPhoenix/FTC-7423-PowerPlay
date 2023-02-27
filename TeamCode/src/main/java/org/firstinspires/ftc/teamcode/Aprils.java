@@ -25,8 +25,7 @@ import java.util.ArrayList;
 
 @Autonomous(name="PARKING", group="none")
 
-public class Aprils extends AutoBase
-{
+public class Aprils extends AutoBase {
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
 

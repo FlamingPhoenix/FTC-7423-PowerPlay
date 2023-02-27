@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
@@ -18,6 +20,9 @@ public class FieldCentric extends LinearOpMode {
         DcMotor bl = hardwareMap.dcMotor.get("bl");
         DcMotor fr = hardwareMap.dcMotor.get("fr");
         DcMotor br = hardwareMap.dcMotor.get("br");
+        NormalizedColorSensor colorSensorGrabber = hardwareMap.get(NormalizedColorSensor.class, "gcs");
+
+
         //TouchSensor touch = hardwareMap.touchSensor.get("touch");
 
         DigitalChannel touch = hardwareMap.get(DigitalChannel.class, "touch");
@@ -39,6 +44,8 @@ public class FieldCentric extends LinearOpMode {
         fr.setDirection(DcMotorSimple.Direction.REVERSE);
         br.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        NormalizedRGBA colorsGrabber;
+
         // Retrieve the IMU from the hardware map
         BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -58,7 +65,9 @@ public class FieldCentric extends LinearOpMode {
         while (isStarted() && opModeIsActive()) {
             //constant lift power
             lift.setPower(-0.15f);
-
+            colorsGrabber = colorSensorGrabber.getNormalizedColors();
+            if (colorsGrabber.red >0.003 ^ colorsGrabber.blue>0.003 && !gamepad2.a)
+                grabber.setPosition(1f);
             //different servo positions and lift power
             if (gamepad2.x)
                 grabber.setPosition(0.7);

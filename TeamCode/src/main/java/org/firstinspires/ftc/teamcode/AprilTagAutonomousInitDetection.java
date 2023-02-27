@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -56,119 +57,32 @@ public class AprilTagAutonomousInitDetection extends AutoBase
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
 
-        TrajectorySequence traj = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(0)))
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(1.1f);
-                    this.sleep(1000);
-                })
-                .addTemporalMarker(1.5, () -> {
-                    lift.setPower(-1f);
-                })
-                .lineToSplineHeading(new Pose2d(54.5, -7.5, Math.toRadians(315)),
-                        SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(20))
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(0.7f);
-                    this.sleep(350);
-                    telemetry.addLine("1");
-                    setStage(5);
-                    lift.setPower(-0.15f);
-                    this.sleep(350);
 
-                })
-                .lineToSplineHeading(new Pose2d(46, 28.5, Math.toRadians(75)),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(20))
+        Pose2d startPose = new Pose2d(7, 0, 0);
 
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(1.1f);
-                    this.sleep(400);
-                    lift.setPower(-1f);
-                    this.sleep(250);
-                })
-                .lineToSplineHeading(new Pose2d(52.5, -14.5, Math.toRadians(0)),
-                        SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(20))
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(0.7f);
-                    this.sleep(350);
-                    telemetry.addLine("2");
-                    setStage(4);
-                    lift.setPower(-0.15f);
-                    this.sleep(350);
+        drive.setPoseEstimate(startPose);
 
-                })
-                .lineToSplineHeading(new Pose2d(48, 28.5, Math.toRadians(75)),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(20))
-
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(1.1f);
-                    this.sleep(400);
-                    lift.setPower(-1f);
-                    this.sleep(250);
-                })
-                .lineToSplineHeading(new Pose2d(52.5, -14, Math.toRadians(0)),
-                        SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(20))
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(0.7f);;
-                    this.sleep(350);
-                    telemetry.addLine("2");
-                    setStage(3);
-                    lift.setPower(-0.15f);
-                    this.sleep(350);
-
-                })
-                .lineToSplineHeading(new Pose2d(48, 28.5, Math.toRadians(75)),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(20))
-
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(1.1f);
-                    this.sleep(400);
-                    lift.setPower(-1f);
-                    this.sleep(250);
-                })
-                .lineToSplineHeading(new Pose2d(52.5, -14, Math.toRadians(0)),
-                        SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(20))
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(0.7f);
-                    this.sleep(350);
-                    telemetry.addLine("4");
-                    setStage((2));
-                    lift.setPower(-0.15f);
-                    this.sleep(350);
-                })
-
-                .lineToSplineHeading(new Pose2d(48, 28.5, Math.toRadians(75)),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(20))
-
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(1.1f);
-                    this.sleep(400);
-                    lift.setPower(-1f);
-                    this.sleep(250);
-                })
-                .lineToSplineHeading(new Pose2d(52.5, -14, Math.toRadians(0)),
-                        SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(20))
-                .addDisplacementMarker(() -> {
-                    grabber.setPosition(0.7f);
-                    this.sleep(1000);
-                    telemetry.addLine("2");
-                })
-                .addDisplacementMarker(()->{
-                    lift.setPower(1f);
-                })
+        TrajectorySequence firstScore = drive.trajectorySequenceBuilder(startPose)
+                .splineTo(new Vector2d(39.00, 0), Math.toRadians(-14),
+                        SampleMecanumDrive.getVelocityConstraint(DriveConstants.MAX_VEL, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(20f))
+                .splineTo(new Vector2d(60, -4), Math.toRadians(-45.0),
+                        SampleMecanumDrive.getVelocityConstraint(40, 5, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(15f))
 
                 .build();
-        DigitalChannel touch = hardwareMap.get(DigitalChannel.class, "touch");
 
-        // set the digital channel to input.
-        touch.setMode(DigitalChannel.Mode.INPUT);
+        Trajectory firstPickup = drive.trajectoryBuilder(firstScore.end().plus(new Pose2d(0.75, 0.75, Math.toRadians(0))))
+                .lineToSplineHeading(new Pose2d(60, 20, Math.toRadians(90.00)))
+                .build();
+        Trajectory secondScore = drive.trajectoryBuilder(firstPickup.end().plus(new Pose2d(0, 5, Math.toRadians(0))))
+                .lineToSplineHeading(new Pose2d(60, -4, Math.toRadians(-45)))
+                .build();
+
+
+
+        grabber.setPosition(1f);
+        waitForStart();
 
 
 
@@ -250,6 +164,8 @@ public class AprilTagAutonomousInitDetection extends AutoBase
 
             telemetry.update();
             sleep(20);
+            grabber.setPosition(1f);
+
         }
 
         /*
@@ -269,38 +185,36 @@ public class AprilTagAutonomousInitDetection extends AutoBase
             telemetry.addLine("No tag snapshot available, it was never sighted during the init loop :(");
             telemetry.update();
         }
-
+        grabber.setPosition(1f);
+        this.sleep(250);
+        drive.followTrajectorySequence(firstScore);
+        setStage(10);
+        DistanceScore(0.12f);
+        grabber.setPosition(0.6f);
+        setStage(5);
+        drive.followTrajectory(firstPickup);
+        StripeAlign(0.3f);
+        grabber.setPosition(1f);
+        lift.setPower(-0.3f);
+        drive.followTrajectory(secondScore);
+        setStage(10);
+        DistanceScore(0.12f);
+        drive.turn(Math.toRadians(45));
 
         //driving based on signal reading; if none found, left selected
         if(tagOfInterest == null || tagOfInterest.id == LEFT){
             telemetry.addLine("LEFT");
             telemetry.update();
-            grabber.setPosition(1.1f);
-            drive.followTrajectorySequence(traj);
-            lift.setPower(1f);
-            grabber.setPosition(0.7f);
-            this.sleep(350);
-            lift.setPower(1f);
-            Strafe(1f, 32, Direction.RIGHT);
+            Strafe(0.4f, 15, Direction.RIGHT);
+
         }else if (tagOfInterest.id == CENTER){
             telemetry.addLine("CENTER");
             telemetry.update();
-            grabber.setPosition(1.1f);
-
-            drive.followTrajectorySequence(traj);
-            grabber.setPosition(0.7f);
-            this.sleep(350);
-            lift.setPower(1f);
-            Strafe(1f, 10, Direction.RIGHT);
+            Drive(3, Direction.BACKWARD);
         }else{
             telemetry.addLine("RIGHT");
-            telemetry.update();
-            grabber.setPosition(1.1f);
-            drive.followTrajectorySequence(traj);
-            grabber.setPosition(0.7f);
-            this.sleep(350);
-            lift.setPower(1f);
-            Strafe(1f, 6, Direction.LEFT);
+
+            Strafe(0.4f, 15, Direction.LEFT);
 
         }
     }

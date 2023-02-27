@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.provider.CalendarContract;
 import android.util.Log;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -12,6 +13,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -38,6 +41,12 @@ public abstract class AutoBase extends LinearOpMode {
     DcMotor lift;
     DistanceSensor distanceLeft, distanceMid, distanceRight;
     SampleMecanumDrive drive;
+    NormalizedColorSensor colorSensorLeft;
+    NormalizedColorSensor colorSensorRight;
+    NormalizedColorSensor colorSensorGrabber;
+    NormalizedRGBA colorsLeft;
+    NormalizedRGBA colorsRight;
+    NormalizedRGBA colorsGrabber;
 
 
     Servo intakeLeft, intakeRight; //intakeLeft is not used because one servo is enough
@@ -67,7 +76,6 @@ public abstract class AutoBase extends LinearOpMode {
     public float startHeading;
 
     public int currentStage, currentPosition;
-    TrajectorySequence traj;
 
     //BNO055IMU imu;
 
@@ -78,7 +86,6 @@ public abstract class AutoBase extends LinearOpMode {
         bl = hardwareMap.dcMotor.get("bl");
 
 
-        DigitalChannel touch = hardwareMap.get(DigitalChannel.class, "touch");
 
         // set the digital channel to input.
         //touch.setMode(DigitalChannel.Mode.INPUT);
@@ -88,55 +95,246 @@ public abstract class AutoBase extends LinearOpMode {
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         Servo grabber = hardwareMap.servo.get("grabber");
         distanceLeft = hardwareMap.get(DistanceSensor.class, "dl");
-        distanceMid = hardwareMap.get(DistanceSensor.class, "dm");
         distanceRight = hardwareMap.get(DistanceSensor.class, "dr");
-
-        imu = new MyIMU(hardwareMap);
+        colorSensorLeft = hardwareMap.get(NormalizedColorSensor.class, "csl");
+        colorSensorRight = hardwareMap.get(NormalizedColorSensor.class, "csr");
+        colorSensorGrabber = hardwareMap.get(NormalizedColorSensor.class, "gcs");
+        //imu = new MyIMU(hardwareMap);
         //imu = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        //BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         // Technically this is the default, however specifying it is clearer
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        imu.initialize(parameters);
+        //parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        //imu.initialize(parameters);
         // Without this, data retrieving from the IMU throws an exception
         //imu.initialize(parameters);
     }
 
 
     public void intake(){
-        grabber.setPosition(1);
+        colorsGrabber = colorSensorGrabber.getNormalizedColors();
+        if (colorsGrabber.red >0.002 ^ colorsGrabber.blue>0.002)
+            grabber.setPosition(0.6f);
     }
     public void outtake(){
-        grabber.setPosition(0.6);
+        grabber.setPosition(1f);
+    }
+
+    public void stripeCorrection(){
+        colorsRight = colorSensorRight.getNormalizedColors();
+        colorsLeft = colorSensorLeft.getNormalizedColors();
+        if((colorsRight.red >0.004 && colorsLeft.red>0.004)){
+            telemetry.addLine("YIPPEE");
+        }
+        if((colorsRight.blue >0.004 && colorsLeft.blue>0.004)){
+            telemetry.addLine("YIPPEE");
+        }
+        telemetry.update();
+        while ((!(colorsRight.red>0.004) ^ !(colorsLeft.red>0.004))){
+            if (colorsRight.red<0.004){
+                Strafe(0.175f, 0.35f, Direction.RIGHT);
+            }
+            if((colorsRight.red >0.004 && colorsLeft.red>0.004)){
+                telemetry.addLine("YIPPEE");
+                break;
+            }
+            if (colorsLeft.red<0.004){
+                Strafe(0.175f, 0.35f, Direction.LEFT);
+            }
+
+            colorsRight = colorSensorRight.getNormalizedColors();
+            colorsLeft = colorSensorLeft.getNormalizedColors();
+
+
+        }
+        while ((!(colorsRight.blue>0.004) ^ !(colorsLeft.blue>0.004))){
+            if (colorsRight.blue<0.004){
+                Strafe(0.3f, 1.5f, Direction.RIGHT);
+            }
+            if (colorsLeft.blue<0.004){
+                Strafe(0.3f, 1.5f, Direction.LEFT);
+            }
+            colorsRight = colorSensorRight.getNormalizedColors();
+            colorsLeft = colorSensorLeft.getNormalizedColors();
+
+
+        }
     }
     public void distanceTune() {
         double d1 = distanceLeft.getDistance(DistanceUnit.CM);
         double d2 = distanceRight.getDistance(DistanceUnit.CM);
-        double d3 = distanceMid.getDistance(DistanceUnit.CM);
+        if ((lift.getCurrentPosition()>1)){
+            while(!(d1<12 && d1>3.5) ^ !(d2<12 && d2>3.5)){
+                if(!(d1<12 && d1>3.5)){
+                    Strafe(0.25f, 0.5f, Direction.LEFT);
+                }
+                if(!(d2<12 && d2>3.5)){
+                    Strafe(0.25f, 0.5f, Direction.RIGHT);
+                }
+                d1 = distanceLeft.getDistance(DistanceUnit.CM);
+                d2 = distanceRight.getDistance(DistanceUnit.CM);
+            }
+            outtake();
 
-        telemetry.addData("left %d", d1);
-        telemetry.addData("right %d", d2);
-        telemetry.addData("middle %d", d3);
-        telemetry.update();
-        double d4;
-        float b;/*
-        if (d1 > d2) {
-            d4 = d2;
-            d2 = d1;
-            d1 = d4;
-            b = 1;
         }
-        if (d1 < d2){
-            telemetry.addLine("PASSED");
+
+    }
+
+
+
+
+
+
+    public void DistanceStrafe(float power)  {
+
+        double d1 = distanceLeft.getDistance(DistanceUnit.INCH);
+        double d2 = distanceRight.getDistance(DistanceUnit.INCH);
+        if (((d2<12 && d2>1.5) && !(d1<12 && d1>1.5)))  {
+            while (((d2<12 && d2>1.5) && !(d1<12 && d1>1.5) && opModeIsActive())) {
+                fl.setPower(power);
+                fr.setPower(-power);
+                bl.setPower(-power);
+                br.setPower(power);
+                d1 = distanceLeft.getDistance(DistanceUnit.INCH);
+                d2 = distanceRight.getDistance(DistanceUnit.INCH);
+            }
+        } else if (!(d2<12 && d2>1.5) && (d1<12 && d1>1.5)) {
+            while (!(d2<12 && d2>1.5) && (d1<12 && d1>1.5) && opModeIsActive()) {
+                fl.setPower(-power);
+                fr.setPower(power);
+                bl.setPower(power);
+                br.setPower(-power);
+                d1 = distanceLeft.getDistance(DistanceUnit.INCH);
+                d2 = distanceRight.getDistance(DistanceUnit.INCH);
+            }
+        }
+        StopAll();
+    }
+    public void DistanceDrive (float power){
+        double d1 = distanceLeft.getDistance(DistanceUnit.INCH);
+        double d2 = distanceRight.getDistance(DistanceUnit.INCH);
+
+        if ((d1+d2)<50){
+            fl.setPower(power);
+            fr.setPower(power);
+            bl.setPower(power);
+            br.setPower(power);
+        }
+    }
+
+    public void DistanceScore (float power) {
+        double d1 = distanceLeft.getDistance(DistanceUnit.INCH);
+        double d2 = distanceRight.getDistance(DistanceUnit.INCH);
+        long startTime = System.currentTimeMillis();
+        long elapsedTime = 0;
+        while (d1 > 7.5 || d2 > 7.5) {
+            DistanceStrafe(2 * power);
+            DistanceDrive(power);
+            d1 = distanceLeft.getDistance(DistanceUnit.INCH);
+            d2 = distanceRight.getDistance(DistanceUnit.INCH);
+            telemetry.addData("d1 %f", d1);
+            telemetry.addData("d2 %f", d2);
             telemetry.update();
-            double x1 = ((Math.pow(d1, 2) + Math.pow(d2, 2)) + 484) / 44;
-            double y = Math.pow((Math.pow(d1, 2) + Math.pow(x1, 2)), 0.5f);
-            double angle = Math.toDegrees(Math.asin(y / d3));
-            //double newAngle = imu.getAdjustedAngle()+90-angle;
-            Turn(0.4f,90-angle,Direction.CLOCKWISE, imu );
-        }*/
+            power = 0.99f*power;
+            elapsedTime = System.currentTimeMillis() - startTime;
+            if (elapsedTime >= 2000) { // 10 seconds timeout
+                break;
+            }
+        }
+        StopAll();
+    }
+
+    public void stripeStrafe(float power) {
+
+        double targetValue = 0.004;
+        double kp = 0.5;
+        double error, correction;
+
+        colorsRight = colorSensorRight.getNormalizedColors();
+        colorsLeft = colorSensorLeft.getNormalizedColors();
+
+        while ((colorsRight.red > targetValue && colorsLeft.red < targetValue) ||
+                (colorsRight.blue > targetValue && colorsLeft.blue < targetValue) && opModeIsActive()) {
+
+            error = (colorsRight.red + colorsRight.blue) - (colorsLeft.red + colorsLeft.blue);
+            correction = kp * error;
+
+            fl.setPower(power - correction);
+            fr.setPower(-power + correction);
+            bl.setPower(-power - correction);
+            br.setPower(power + correction);
+
+            colorsRight = colorSensorRight.getNormalizedColors();
+            colorsLeft = colorSensorLeft.getNormalizedColors();
+        }
+
+        StopAll();
+    }
+
+    public void StripeStrafe(float power)  {
+
+        colorsRight = colorSensorRight.getNormalizedColors();
+        colorsLeft = colorSensorLeft.getNormalizedColors();
+
+        if (colorsRight.red >0.004 && colorsLeft.red  <0.004) {
+            while (colorsRight.red >0.004 && colorsLeft.red  <0.004 && opModeIsActive()) {
+                fl.setPower(power);
+                fr.setPower(-power);
+                bl.setPower(-power);
+                br.setPower(power);
+                colorsRight = colorSensorRight.getNormalizedColors();
+                colorsLeft = colorSensorLeft.getNormalizedColors();
+            }
+        } else {
+            while (colorsRight.red <0.004 && colorsLeft.red > 0.004 && opModeIsActive()) {
+                fl.setPower(-power);
+                fr.setPower(power);
+                bl.setPower(power);
+                br.setPower(-power);
+                colorsRight = colorSensorRight.getNormalizedColors();
+                colorsLeft = colorSensorLeft.getNormalizedColors();
+            }
+        }
+        if (colorsRight.blue >0.004 && colorsLeft.blue  <0.004) {
+            while (colorsRight.blue >0.004 && colorsLeft.blue  <0.004 && opModeIsActive()) {
+                fl.setPower(power);
+                fr.setPower(-power);
+                bl.setPower(-power);
+                br.setPower(power);
+                colorsRight = colorSensorRight.getNormalizedColors();
+                colorsLeft = colorSensorLeft.getNormalizedColors();
+            }
+        } else {
+            while (colorsRight.blue <0.004 && colorsLeft.blue > 0.004 && opModeIsActive()) {
+                fl.setPower(-power);
+                fr.setPower(power);
+                bl.setPower(power);
+                br.setPower(-power);
+                colorsRight = colorSensorRight.getNormalizedColors();
+                colorsLeft = colorSensorLeft.getNormalizedColors();
+            }
+        }
+
+
+        StopAll();
+    }
+
+    public void StripeAlign(float power){
+        NormalizedRGBA colors = colorSensorGrabber.getNormalizedColors();
+        while (colors.red <0.004 && colors.blue <0.004) {
+
+            StripeStrafe(0.18f);
+            fl.setPower(power);
+            fr.setPower(power);
+            bl.setPower(power);
+            br.setPower(power);
+            colors = colorSensorGrabber.getNormalizedColors();
+
+        }
+        Drive(1);
 
 
     }
+
     public void setStage(int coneNumber){
         float currentPos = lift.getCurrentPosition();
         if (coneNumber == 5){
@@ -175,14 +373,28 @@ public abstract class AutoBase extends LinearOpMode {
             }
 
         }
+        else if (coneNumber == 10){
+            while (currentPos >-950){
+                lift.setPower(-1f);
+                currentPos = lift.getCurrentPosition();
+                telemetry.addData("Current Pos %d", currentPos);
+                telemetry.update();
+            }
+
+        }
+
+
         else{
-            lift.setPower(1f);
+            while (currentPos <-5){
+                lift.setPower(1f);
+                currentPos = lift.getCurrentPosition();
+                telemetry.addData("Current Pos %d", currentPos);
+                telemetry.update();
+            }
         }
         lift.setPower(-0.15f);
     }
-    public void AutoRoutineLEFT(){
-        drive.followTrajectorySequence(traj);
-    }
+
     public void StopAll() {
         fl.setPower(0);
         fr.setPower(0);
@@ -190,10 +402,10 @@ public abstract class AutoBase extends LinearOpMode {
         br.setPower(0);
     }
 
-    public void Drive(float distance){
-        float x = (PPR * distance)/(diameter * (float)Math.PI);
+    public void Drive(double distance){
+        double x = (PPR * distance)/(diameter * (float)Math.PI);
 
-        int targetEncoderValue = Math.round(x);
+        long targetEncoderValue = Math.round(x);
 
         fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -378,16 +590,16 @@ public abstract class AutoBase extends LinearOpMode {
         if (d == Direction.LEFT) {
             while (currentPosition < targetEncoderValue && opModeIsActive()) {
                 currentPosition = Math.abs(fl.getCurrentPosition());
-                fl.setPower(0.85f*power);
-                fr.setPower(0.85f*-power);
+                fl.setPower(power);
+                fr.setPower(-power);
                 bl.setPower(-power);
                 br.setPower(power);
             }
         } else {
             while (currentPosition < targetEncoderValue && opModeIsActive()) {
                 currentPosition = Math.abs(fl.getCurrentPosition());
-                fl.setPower(0.85f*-power);
-                fr.setPower(0.85f*power);
+                fl.setPower(-power);
+                fr.setPower(power);
                 bl.setPower(power);
                 br.setPower(-power);
             }
